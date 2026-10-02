@@ -1,0 +1,452 @@
+---
+/**
+ * Cookie emergency. Time-aware in Kolkata: from 10pm to 3am the section goes dark, the
+ * lock-screen notifications slide in and the clock is real. Always states today's cut-off
+ * honestly (or, with no cut-off on file, only what we know).
+ */
+import { defaultFlavour } from '../../content/facts';
+import { quickOrderHref } from '../../lib/checkout';
+import { cutoffCopy } from '../../lib/cutoff-copy';
+
+const symptoms = ['Staring into the fridge', 'The 4pm slump', 'Saying “just one”', 'Exam-week brain', 'Midnight cravings'];
+---
+
+<section class="section sos" id="emergency" aria-labelledby="sos-title" data-sos>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="wrap sos-grid">
+    <div class="stack stack-5 sos-copy">
+      <p class="alert"><span class="siren" aria-hidden="true"></span>Emergency alert</p>
+      <h2 id="sos-title">Cookie emergency? Stay calm.</h2>
+      <p class="lede">
+        It&rsquo;s <time data-sos-time>11:47pm</time>. The snack drawer is empty. The group chat has gone quiet. This is not a drill.
+      </p>
+
+      <fieldset class="symptoms">
+        <legend>Common symptoms <span class="legend-hint">(tick yours)</span></legend>
+        {
+          symptoms.map((s, i) => (
+            <label class="sym">
+              <input type="checkbox" value={i} data-sym />
+              <span class="box" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+              </span>
+              <span>{s}</span>
+            </label>
+          ))
+        }
+      </fieldset>
+
+      <div class="rx">
+        <p class="rx-label">Treatment</p>
+        <p class="rx-text" data-rx aria-live="polite">One cup of No Biggie. Pop the lid. Dip. Repeat until the alert clears.</p>
+        <p class="rx-time" data-cutoff="emergency">{cutoffCopy({ kind: 'unknown' }, 'emergency')}</p>
+      </div>
+
+      <div class="sos-foot">
+        <a class="btn" href={quickOrderHref(defaultFlavour)} data-order data-order-qty="1" data-sos-order>Send help</a>
+        <p class="hand note">Keep a backup cup. Emergencies don&rsquo;t text first.</p>
+      </div>
+    </div>
+
+    <div class="phone-wrap" aria-hidden="true">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-top">
+            <span class="phone-date" data-sos-date>Friday 2 October</span>
+            <span class="phone-clock num" data-sos-clock>11:47</span>
+          </div>
+          <ul class="notifs" role="list">
+            <li class="notif" style="--i:0">
+              <span class="app warn"><svg viewBox="0 0 24 24"><path d="M12 4 21 19.5H3z" /><path d="M12 10v4.2M12 16.8v.2" /></svg></span>
+              <span class="n-body"><b>Cookie levels critically low</b><span>Check the snack drawer. Actually, don&rsquo;t.</span></span>
+              <span class="n-time">now</span>
+            </li>
+            <li class="notif" style="--i:1">
+              <span class="app chat"><svg viewBox="0 0 24 24"><path d="M4.5 18.5 5.6 15A7.5 7.5 0 1 1 8.6 18z" /></svg></span>
+              <span class="n-body"><b>Group chat</b><span>anyone got cookies??</span></span>
+              <span class="n-time">2m</span>
+            </li>
+            <li class="notif" style="--i:2">
+              <span class="app brain"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" /><circle cx="9.5" cy="10.5" r="1.1" /><circle cx="14" cy="13.5" r="1.3" /></svg></span>
+              <span class="n-body"><b>Your brain</b><span>just one more.</span></span>
+              <span class="n-time">5m</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { ist } from '../../lib/clock';
+
+  const sos = document.querySelector<HTMLElement>('[data-sos]');
+  if (sos) {
+    const time = sos.querySelector<HTMLElement>('[data-sos-time]')!;
+    const clock = sos.querySelector<HTMLElement>('[data-sos-clock]')!;
+    const date = sos.querySelector<HTMLElement>('[data-sos-date]')!;
+    const rx = sos.querySelector<HTMLElement>('[data-rx]')!;
+    const order = sos.querySelector<HTMLAnchorElement>('[data-sos-order]')!;
+    const boxes = [...sos.querySelectorAll<HTMLInputElement>('[data-sym]')];
+
+    // During an actual emergency the clock is real; the rest of the day it's 11:47pm forever.
+    const tick = () => {
+      if (document.documentElement.dataset.shift !== 'night') return;
+      const t = ist();
+      time.textContent = t.label;
+      clock.textContent = t.label.replace(/[ap]m$/, '');
+      const d = new Date(Date.now() + 330 * 60_000);
+      date.textContent = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+    };
+    tick();
+    setInterval(tick, 20_000);
+
+    // Symptom checker: the more you tick, the stronger the prescription.
+    const rxFor = (n: number): [string, number] => {
+      if (n === 0) return ['One cup of No Biggie. Pop the lid. Dip. Repeat until the alert clears.', 1];
+      if (n <= 2) return [`${n} symptom${n > 1 ? 's' : ''}. One cup, lid off, dip immediately. Repeat until the alert clears.`, 1];
+      if (n <= 4) return [`${n} symptoms. Two cups. One for now, one for the next time this happens.`, 2];
+      return ['All five. Two cups and a lie-down. We’ve seen this before.', 2];
+    };
+    const update = () => {
+      const [text, qty] = rxFor(boxes.filter((b) => b.checked).length);
+      rx.textContent = text;
+      order.dataset.orderQty = String(qty);
+      order.textContent = qty > 1 ? `Send help (${qty} cups)` : 'Send help';
+    };
+    boxes.forEach((b) => b.addEventListener('change', update));
+
+    // Notifications slide in when the section arrives, at night only.
+    new IntersectionObserver(
+      ([e], io) => {
+        if (e.isIntersecting) {
+          sos.dataset.seen = '';
+          io.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    ).observe(sos);
+  }
+</script>
+
+<style>
+  .sos {
+    overflow: hidden;
+    transition: background-color 600ms, color 600ms;
+  }
+  .glow {
+    display: none;
+  }
+  .sos-grid {
+    position: relative;
+    display: grid;
+    gap: var(--s-8);
+  }
+  .alert {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    padding: 7px 14px 7px 12px;
+    border-radius: var(--r-pill);
+    background: var(--velvet);
+    color: var(--cream);
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .siren {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #FFD3CD;
+    animation: blink 1.4s steps(2, jump-none) infinite;
+  }
+  @keyframes blink {
+    50% { opacity: 0.25; }
+  }
+  .sos h2 {
+    max-width: 12ch;
+  }
+  .symptoms {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  legend {
+    font: 600 0.82rem/1 var(--f-ui);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cocoa-2);
+    margin-bottom: 8px;
+    padding: 0;
+  }
+  .legend-hint {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+  }
+  .sym {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: var(--tap);
+    cursor: pointer;
+    font-size: 1.04rem;
+  }
+  .sym input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .box {
+    width: 24px;
+    height: 24px;
+    flex: none;
+    border: 2px solid var(--cocoa);
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+    background: var(--paper);
+    transition: background-color var(--d-1);
+  }
+  .box svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--cream);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity var(--d-1), transform var(--d-2) var(--spring);
+  }
+  .sym input:checked + .box {
+    background: var(--velvet);
+    border-color: var(--velvet);
+  }
+  .sym input:checked + .box svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .sym input:focus-visible + .box {
+    outline: 3px solid var(--cocoa);
+    outline-offset: 3px;
+  }
+  .sym input:checked ~ span:last-child {
+    text-decoration: line-through;
+    text-decoration-color: rgb(179 38 46 / 0.6);
+    text-decoration-thickness: 2px;
+  }
+  .rx {
+    border-left: 3px solid var(--velvet);
+    padding: 4px 0 4px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .rx-label {
+    font: 600 0.82rem/1 var(--f-ui);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--velvet);
+  }
+  .rx-text {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 1.3rem;
+    line-height: 1.25;
+    max-width: 30ch;
+  }
+  .rx-time {
+    color: var(--cocoa-2);
+    font-size: 0.95rem;
+  }
+  .sos-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 20px;
+  }
+  .note {
+    max-width: 22ch;
+    transform: rotate(-2deg);
+  }
+
+  /* phone */
+  .phone-wrap {
+    display: grid;
+    place-items: center;
+  }
+  .phone {
+    width: min(300px, 82vw);
+    aspect-ratio: 9 / 14;
+    border-radius: 44px;
+    padding: 11px;
+    background: linear-gradient(145deg, #3a2a20, #120a06);
+    box-shadow: var(--shadow-3), inset 0 0 0 2px rgb(255 255 255 / 0.06);
+    transform: rotate(3deg);
+  }
+  .phone-screen {
+    position: relative;
+    height: 100%;
+    border-radius: 34px;
+    overflow: hidden;
+    padding: 40px 12px 12px;
+    background: radial-gradient(120% 70% at 50% 0%, #5a3424 0%, #2b170e 55%, #160b06 100%);
+    color: #fff;
+  }
+  .phone-screen::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 84px;
+    height: 24px;
+    margin-left: -42px;
+    border-radius: 14px;
+    background: #000;
+  }
+  .phone-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 26px;
+  }
+  .phone-date {
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.85;
+  }
+  .phone-clock {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 4.2rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .notifs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .notif {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    gap: 9px;
+    align-items: start;
+    padding: 10px 11px;
+    border-radius: 16px;
+    background: rgb(255 248 238 / 0.82);
+    color: #241309;
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+  .app {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+  }
+  .app svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .app.warn {
+    background: var(--velvet);
+    color: #fff;
+  }
+  .app.chat {
+    background: #2E7D4F;
+    color: #fff;
+  }
+  .app.brain {
+    background: var(--nutella);
+    color: var(--white-choc);
+  }
+  .n-body {
+    display: flex;
+    flex-direction: column;
+  }
+  .n-body b {
+    font-weight: 700;
+  }
+  .n-time {
+    font-size: 0.72rem;
+    opacity: 0.6;
+  }
+
+  /* ---- the actual emergency (10pm–3am Kolkata) ---- */
+  :global(html[data-shift='night']) .sos {
+    background: var(--night);
+    color: var(--night-text);
+  }
+  :global(html[data-shift='night']) .sos :global(:focus-visible) {
+    outline-color: var(--white-choc);
+  }
+  :global(html[data-shift='night']) .sos .lede,
+  :global(html[data-shift='night']) .sos .rx-time,
+  :global(html[data-shift='night']) .sos legend {
+    color: var(--night-soft);
+  }
+  :global(html[data-shift='night']) .sos .box {
+    border-color: var(--night-text);
+    background: transparent;
+  }
+  :global(html[data-shift='night']) .sos .note {
+    color: #FF9C8F;
+  }
+  :global(html[data-shift='night']) .sos .rx {
+    border-color: #FF6F61;
+  }
+  :global(html[data-shift='night']) .sos .rx-label {
+    color: #FF9C8F;
+  }
+  :global(html[data-shift='night']) .glow {
+    display: block;
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(40% 35% at 30% 30%, rgb(255 70 55 / 0.22), transparent 70%);
+    animation: sweep 5s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes sweep {
+    from { transform: translateX(-12%); opacity: 0.6; }
+    to { transform: translateX(28%); opacity: 1; }
+  }
+  :global(html[data-shift='night']) .sos .notif {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.98);
+    transition: opacity 360ms ease, transform 520ms var(--spring);
+    transition-delay: calc(var(--i) * 900ms + 300ms);
+  }
+  :global(html[data-shift='night']) .sos[data-seen] .notif {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (min-width: 900px) {
+    .sos-grid {
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+    }
+    .phone {
+      width: 320px;
+      aspect-ratio: 9 / 18.5;
+    }
+  }
+</style>

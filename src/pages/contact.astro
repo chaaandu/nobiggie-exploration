@@ -1,0 +1,119 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/site/PageHead.astro';
+import Icon from '../components/ui/Icon.astro';
+import { brand } from '../content/facts';
+import { businessLd } from '../lib/schema';
+
+const hello = 'Hi No Biggie, a quick question: ';
+---
+
+<Base
+  title="Contact · No Biggie"
+  description="Bulk orders, a cup that arrived wrong, or a question about the dips. WhatsApp, call or Instagram: it all comes to the same place."
+  jsonLd={[businessLd()]}
+>
+  <PageHead
+    kicker="contact"
+    title="Say hello."
+    lede="Bulk orders, a cup that arrived wrong, or just a question about the dips. All of it comes to the same place."
+  />
+  <section class="wrap ways" aria-label="Ways to reach us" data-bar-trigger>
+    <a class="way way-main" href={`https://wa.me/${brand.phone.whatsapp}?text=${encodeURIComponent(hello)}`} target="_blank" rel="noopener">
+      <Icon name="whatsapp" size={28} />
+      <span class="way-k">WhatsApp</span>
+      <span class="way-v">{brand.phone.display}</span>
+      <span class="way-note hand">fastest. we actually reply.</span>
+    </a>
+    <a class="way" href={`tel:${brand.phone.tel}`}>
+      <Icon name="phone" size={26} />
+      <span class="way-k">Call</span>
+      <span class="way-v">{brand.phone.display}</span>
+    </a>
+    <a class="way" href={brand.instagram.url} target="_blank" rel="noopener">
+      <Icon name="instagram" size={26} />
+      <span class="way-k">Instagram</span>
+      <span class="way-v">{brand.instagram.handle}</span>
+    </a>
+    {
+      brand.email && (
+        <a class="way" href={`mailto:${brand.email}`}>
+          <Icon name="mail" size={26} />
+          <span class="way-k">Email</span>
+          <span class="way-v">{brand.email}</span>
+        </a>
+      )
+    }
+  </section>
+  <p class="wrap based">Based in {brand.city}. We deliver in {brand.city} only, for now.</p>
+</Base>
+
+<style>
+  .ways {
+    display: grid;
+    gap: 14px;
+  }
+  .way {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 16px;
+    align-items: center;
+    padding: 18px 20px;
+    border-radius: var(--r-3);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-1);
+    text-decoration: none;
+    min-height: 88px;
+  }
+  .way :global(svg) {
+    grid-row: span 2;
+    color: var(--velvet);
+  }
+  .way:hover {
+    box-shadow: var(--shadow-2);
+  }
+  .way-k {
+    font-weight: 600;
+    color: var(--cocoa-2);
+    font-size: 0.9rem;
+  }
+  .way-v {
+    font-family: var(--f-display);
+    font-weight: 650;
+    font-size: 1.4rem;
+    overflow-wrap: anywhere;
+  }
+  .way-main {
+    background: var(--cocoa);
+    color: var(--cream);
+    border-color: var(--cocoa);
+  }
+  .way-main .way-k {
+    color: var(--night-soft);
+  }
+  .way-main :global(svg) {
+    color: #8FD9A8;
+  }
+  .way-note {
+    position: absolute;
+    right: 18px;
+    top: -14px;
+    transform: rotate(4deg);
+    background: var(--cream);
+    padding: 2px 8px;
+    font-size: 1.1rem;
+    border-radius: 4px;
+  }
+  .based {
+    padding-block: var(--s-6) var(--section);
+    color: var(--cocoa-2);
+  }
+  @media (min-width: 760px) {
+    .ways {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

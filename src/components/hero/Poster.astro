@@ -1,0 +1,57 @@
+---
+/**
+ * The first frame of the hero. Placeholder drawing for now; phase 2 swaps in renders of the
+ * 3D cup (public/renders), which are pixel-matched to the scene's first frame.
+ */
+import { flavourById, dips, type FlavourId } from '../../content/facts';
+
+interface Props {
+  flavour: FlavourId;
+}
+const f = flavourById(Astro.props.flavour);
+const dip = dips[f.dip];
+// Deterministic cookie layout so the drawing doesn't change between builds.
+const cookies: { x: number; y: number; r: number }[] = [];
+let seed = 11;
+const rand = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+for (let row = 0; row < 6; row++) {
+  const y = 300 - row * 30;
+  const half = 58 + row * 6;
+  for (let x = -half; x <= half; x += 34) cookies.push({ x: 200 + x + (rand() - 0.5) * 10, y: y + (rand() - 0.5) * 8, r: 17 + rand() * 3 });
+}
+---
+
+<div class="poster" data-poster>
+  <svg viewBox="0 0 400 400" role="img" aria-label={`A clear cup of ${f.name} mini cookies with a dome lid of ${dip.name.toLowerCase()} dip`}>
+    <defs>
+      <clipPath id="cupclip"><path d="M118 118 L140 345 Q142 356 154 356 L246 356 Q258 356 260 345 L282 118 Z"></path></clipPath>
+      <radialGradient id="shadow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3B2416" stop-opacity=".32"></stop><stop offset="1" stop-color="#3B2416" stop-opacity="0"></stop></radialGradient>
+      <linearGradient id="dome" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color={dip.colour}></stop><stop offset="1" stop-color={dip.colour} stop-opacity=".92"></stop></linearGradient>
+    </defs>
+    <ellipse cx="200" cy="360" rx="120" ry="16" fill="url(#shadow)"></ellipse>
+    <g clip-path="url(#cupclip)">
+      <rect x="100" y="110" width="200" height="260" fill="#EADBC4" opacity=".35"></rect>
+      {cookies.map((c) => <circle cx={c.x} cy={c.y} r={c.r} fill={f.look.cookie} stroke={f.look.cookieDark} stroke-width="2" />)}
+    </g>
+    <path d="M118 118 L140 345 Q142 356 154 356 L246 356 Q258 356 260 345 L282 118" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3"></path>
+    <circle cx="200" cy="262" r="42" fill="#F7EEDD"></circle>
+    <text x="200" y="258" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="760" font-size="17" fill="#B3262E">NO</text>
+    <text x="200" y="276" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="760" font-size="17" fill="#B3262E">BIGGIE</text>
+    <path d="M128 118 Q128 52 200 52 Q272 52 272 118 Z" fill="url(#dome)"></path>
+    <path d="M140 92 Q150 64 186 58" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="5" stroke-linecap="round"></path>
+    <rect x="112" y="114" width="176" height="9" rx="4.5" fill="#fff" fill-opacity=".75"></rect>
+  </svg>
+</div>
+
+<style>
+  .poster {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  .poster svg {
+    height: 100%;
+    width: auto;
+  }
+</style>

@@ -1,0 +1,260 @@
+---
+import { defaultFlavour } from '../../content/facts';
+import { quickOrderHref } from '../../lib/checkout';
+
+const evidence = [
+  { k: 'Victim', v: 'One cup of No Biggie' },
+  { k: 'Last seen', v: '2 mins ago' },
+  { k: 'Weapon', v: 'Two fingers and a dip' },
+  { k: 'Motive', v: 'Hunger. Obviously.' },
+  { k: 'Evidence', v: 'Crumbs on your hoodie' },
+  { k: 'Suspect', v: 'Everyone' },
+];
+const tape = 'CRIME SCENE · DO NOT CROSS · ';
+---
+
+<section class="section case" id="case-file" aria-labelledby="case-title">
+  <div class="case-tape" aria-hidden="true"><span>{tape.repeat(10)}</span></div>
+  <div class="wrap case-grid">
+    <header class="stack stack-4 case-head">
+      <p class="kicker">case file #001</p>
+      <h2 id="case-title">The case of the missing cookie.</h2>
+      <p class="lede">
+        One cup on the table. Two minutes later: crumbs everywhere, an empty lid, and nobody&rsquo;s talking. We&rsquo;ve seen it
+        happen more times than we can count.
+      </p>
+      <p class="hint hand" aria-hidden="true">tap the cards. they&rsquo;ll talk.</p>
+    </header>
+
+    <ul class="board" role="list" aria-label="Evidence">
+      {
+        evidence.map((e, i) => (
+          <li class="ev-slot" style={`--tilt:${[-2.2, 1.6, -1, 2.4, -1.8, 1.2][i]}deg`}>
+            <button class="ev" type="button" aria-expanded="false" aria-controls={`ev-${i}`} data-ev>
+              <span class="ev-inner">
+                <span class="ev-face ev-front">
+                  <span class="ev-no">Exhibit {String.fromCharCode(65 + i)}</span>
+                  <span class="ev-k">{e.k}</span>
+                  <span class="ev-redact" aria-hidden="true" />
+                  <span class="ev-redact short" aria-hidden="true" />
+                </span>
+                <span class="ev-face ev-back" id={`ev-${i}`} aria-hidden="true">
+                  <span class="ev-k small-k">{e.k}</span>
+                  <span class="ev-v">{e.v}</span>
+                </span>
+              </span>
+            </button>
+            <span class="ev-tape" aria-hidden="true" />
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="case-foot">
+      <span class="stamp" aria-hidden="true">Case closed</span>
+      <a class="btn" href={quickOrderHref(defaultFlavour)} data-order><span class="sr-only">Case closed. </span>Commit the crime</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-ev]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const open = b.getAttribute('aria-expanded') !== 'true';
+      b.setAttribute('aria-expanded', String(open));
+      document.getElementById(b.getAttribute('aria-controls')!)?.setAttribute('aria-hidden', String(!open));
+    });
+  });
+</script>
+
+<style>
+  .case {
+    background-color: var(--kraft);
+    background-image: url('/textures/grain.webp'), radial-gradient(120% 80% at 50% 0%, #E2CFAF 0%, var(--kraft) 60%, #CDB48C 100%);
+    background-size: 180px 180px, auto;
+    overflow: hidden;
+  }
+  .case-tape {
+    position: absolute;
+    top: 26px;
+    left: -5%;
+    width: 110%;
+    height: 40px;
+    transform: rotate(-2.5deg);
+    background: var(--tape);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    font: 700 0.92rem/1 var(--f-ui);
+    letter-spacing: 0.14em;
+    box-shadow: 0 6px 12px -6px rgb(30 18 10 / 0.5);
+  }
+  .case-grid {
+    display: grid;
+    gap: var(--s-7);
+    padding-top: 40px;
+  }
+  .case-head h2 {
+    max-width: 14ch;
+  }
+  .case-head .lede {
+    color: #5C4130;
+  }
+  .hint {
+    color: var(--velvet);
+    transform: rotate(-2deg);
+    width: fit-content;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 26px 14px;
+  }
+  .ev-slot {
+    position: relative;
+    transform: rotate(var(--tilt));
+  }
+  .ev {
+    display: block;
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    padding: 0;
+    border: 0;
+    background: none;
+    perspective: 900px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ev-inner {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 520ms var(--spring);
+  }
+  .ev[aria-expanded='true'] .ev-inner {
+    transform: rotateY(180deg);
+  }
+  .ev-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 22px 14px 12px;
+    text-align: left;
+    background-color: var(--paper);
+    /* index card: one red rule, faint blue lines */
+    background-image:
+      linear-gradient(to bottom, transparent 30px, rgb(179 38 46 / 0.5) 30px, rgb(179 38 46 / 0.5) 31.5px, transparent 31.5px),
+      repeating-linear-gradient(to bottom, transparent 0 21px, rgb(91 120 160 / 0.18) 21px 22px);
+    background-position: 0 0, 0 31px;
+    border-radius: 3px;
+    box-shadow: var(--shadow-2);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    color: var(--cocoa);
+  }
+  .ev-back {
+    transform: rotateY(180deg);
+    justify-content: center;
+  }
+  .ev-no {
+    position: absolute;
+    top: 7px;
+    left: 14px;
+    font: 600 0.68rem/1 var(--f-ui);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cocoa-2);
+  }
+  .ev-k {
+    font-family: var(--f-display);
+    font-weight: 650;
+    font-size: clamp(1.3rem, 1rem + 1.2vw, 1.75rem);
+    line-height: 1;
+    margin-top: 16px;
+  }
+  .small-k {
+    margin-top: 0;
+    font-size: 0.82rem;
+    font-family: var(--f-ui);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--velvet);
+  }
+  .ev-v {
+    font-family: var(--f-hand);
+    font-size: clamp(1.3rem, 1.05rem + 1vw, 1.75rem);
+    line-height: 1.12;
+    color: var(--cocoa);
+  }
+  .ev-redact {
+    display: block;
+    height: 13px;
+    width: 88%;
+    background: var(--ink);
+    border-radius: 2px;
+    margin-top: 4px;
+  }
+  .ev-redact.short {
+    width: 52%;
+  }
+  .ev-tape {
+    position: absolute;
+    top: -8px;
+    right: -12px;
+    width: 58px;
+    height: 20px;
+    background: rgb(246 239 227 / 0.78);
+    box-shadow: 0 1px 2px rgb(59 36 22 / 0.2);
+    transform: rotate(32deg);
+    clip-path: polygon(4% 0, 96% 6%, 100% 94%, 0 100%);
+    pointer-events: none;
+  }
+  .ev:hover .ev-inner {
+    transform: translateY(-3px);
+  }
+  .ev[aria-expanded='true']:hover .ev-inner {
+    transform: rotateY(180deg) translateY(-3px);
+  }
+
+  .case-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px 24px;
+  }
+  .stamp {
+    font: 700 1.1rem/1 var(--f-ui);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--velvet);
+    border: 3px solid var(--velvet);
+    border-radius: 6px;
+    padding: 8px 12px;
+    transform: rotate(-7deg);
+    opacity: 0.9;
+    mix-blend-mode: multiply;
+  }
+
+  @media (min-width: 900px) {
+    .case-grid {
+      grid-template-columns: 0.9fr 1.3fr;
+      align-items: start;
+      padding-top: 56px;
+    }
+    .board {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 34px 22px;
+    }
+    .case-foot {
+      grid-column: 2;
+    }
+  }
+</style>

@@ -1,0 +1,174 @@
+---
+import B2BForm from './B2BForm.astro';
+import Icon from '../ui/Icon.astro';
+import { b2bSegments, brand } from '../../content/facts';
+
+interface Props {
+  /** On the home page the form sits behind a disclosure; on /b2b it's open. */
+  collapsed?: boolean;
+  headingLevel?: 'h1' | 'h2';
+}
+const { collapsed = true, headingLevel = 'h2' } = Astro.props;
+const H = headingLevel;
+const icons = ['M5 10h14l-1 9H6zM8 10V7a4 4 0 0 1 8 0v3', 'M4 9h16v11H4zM12 9v11M4 13h16M12 9c-2-4-6-4-6-1s6 1 6 1 6 2 6-1-4-3-6 1', 'M4 20V6l8-3 8 3v14M9 20v-5h6v5M8 9h2M14 9h2', 'M12 21s-7-5-7-11a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 6-7 11-7 11z'];
+---
+
+<section class="section b2b" id="b2b" aria-labelledby="b2b-title">
+  <div class="wrap b2b-grid">
+    <div class="stack stack-5">
+      <p class="kicker">for businesses</p>
+      <H id="b2b-title" class="b2b-title">We do B2B too.</H>
+      <p class="lede">
+        Stocking a caf&eacute;, gifting a team, or feeding a room full of guests? We supply No Biggie cups in bulk to businesses. Tell us
+        what you need and we&rsquo;ll put together an order that fits.
+      </p>
+      <ul class="segments" role="list">
+        {
+          b2bSegments.map((s, i) => (
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d={icons[i]} />
+              </svg>
+              <div>
+                <h3>{s.name}</h3>
+                <p>{s.line}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="b2b-contact">
+        <a class="btn btn-ghost btn-sm" href={`tel:${brand.phone.tel}`}><Icon name="phone" size={18} /> Call {brand.phone.display}</a>
+        <a class="btn btn-ghost btn-sm" href={brand.instagram.url} target="_blank" rel="noopener"><Icon name="instagram" size={18} /> Instagram</a>
+      </div>
+    </div>
+
+    <div class="form-card" id="enquiry">
+      {
+        collapsed ? (
+          <details class="disclose">
+            <summary>
+              <span>Start a B2B enquiry</span>
+              <Icon name="plus" size={20} />
+            </summary>
+            <B2BForm />
+          </details>
+        ) : (
+          <>
+            <h2 class="form-title">Tell us what you need</h2>
+            <B2BForm />
+          </>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .b2b {
+    background: var(--cocoa);
+    color: var(--white-choc);
+  }
+  .b2b :global(:focus-visible) {
+    outline-color: var(--white-choc);
+  }
+  .b2b .kicker {
+    color: #F0B7A4;
+  }
+  .b2b .lede {
+    color: var(--night-soft);
+  }
+  .b2b-title {
+    color: var(--cream);
+    font-size: var(--t-h2);
+  }
+  .b2b-grid {
+    display: grid;
+    gap: var(--s-7);
+  }
+  .segments {
+    display: grid;
+    gap: 16px;
+  }
+  .segments li {
+    display: flex;
+    gap: 14px;
+  }
+  .segments svg {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    fill: none;
+    stroke: #F0B7A4;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    margin-top: 3px;
+  }
+  .segments h3 {
+    font-size: 1.25rem;
+    color: var(--cream);
+  }
+  .segments p {
+    color: var(--night-soft);
+    font-size: 0.95rem;
+  }
+  .b2b-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .b2b-contact :global(.btn-ghost) {
+    --btn-fg: var(--cream);
+  }
+  .form-card {
+    background: var(--paper);
+    color: var(--cocoa);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.6);
+    align-self: start;
+  }
+  .form-card :global(:focus-visible) {
+    outline-color: var(--cocoa);
+  }
+  .form-title {
+    font-size: 1.7rem;
+    margin-bottom: 16px;
+  }
+  .disclose summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 52px;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--f-display);
+    font-weight: 650;
+    font-size: 1.45rem;
+  }
+  .disclose summary::-webkit-details-marker {
+    display: none;
+  }
+  .disclose[open] summary {
+    margin-bottom: 14px;
+  }
+  .disclose[open] summary :global(svg) {
+    transform: rotate(45deg);
+  }
+  .disclose summary :global(svg) {
+    transition: transform var(--d-2);
+  }
+  @media (min-width: 900px) {
+    .b2b-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-8);
+    }
+    .segments {
+      grid-template-columns: 1fr 1fr;
+    }
+    .form-card {
+      padding: 28px;
+    }
+  }
+</style>

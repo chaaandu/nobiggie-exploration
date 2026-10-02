@@ -1,0 +1,45 @@
+---
+import CupCard from '../shop/CupCard.astro';
+import { flavours } from '../../content/facts';
+---
+
+<section class="section pick" id="pick" aria-labelledby="pick-title">
+  <div class="wrap">
+    <header class="stack stack-4 pick-head">
+      <p class="kicker">three flavours</p>
+      <h2 id="pick-title">Pick your cup.</h2>
+      <p class="lede">
+        Every cup is the same build: a full cup of mini cookies, with dip sealed into the lid. What changes is what you&rsquo;re
+        dunking, and what you&rsquo;re dunking it into.
+      </p>
+    </header>
+    <div class="grid">
+      {flavours.map((f) => <CupCard flavour={f} />)}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pick {
+    background: linear-gradient(to bottom, transparent, rgb(239 228 209 / 0.55) 30%, rgb(239 228 209 / 0.55) 70%, transparent);
+  }
+  .pick-head {
+    max-width: 40rem;
+    margin-bottom: var(--s-7);
+  }
+  .grid {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 640px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1000px) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+  }
+</style>

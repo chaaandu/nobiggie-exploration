@@ -1,0 +1,104 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+import Header from '../components/site/Header.astro';
+import Footer from '../components/site/Footer.astro';
+import EmergencyBanner from '../components/site/EmergencyBanner.astro';
+import StickyBar from '../components/site/StickyBar.astro';
+import Bag from '../components/bag/Bag.astro';
+import { brand } from '../content/facts';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path to the share image, e.g. "/og/home.png". */
+  image?: string;
+  type?: 'website' | 'product';
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+  /** Preload the italic headline face (pages whose h1 uses it above the fold). */
+  italicHeadline?: boolean;
+}
+
+const { title, description, image = '/og/home.png', type = 'website', jsonLd = [], noindex = false, italicHeadline = false } = Astro.props;
+const site = Astro.site ?? new URL(brand.siteUrl);
+const canonical = new URL(Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/', site).href;
+const imageUrl = new URL(image, site).href;
+---
+
+<!doctype html>
+<html lang="en-IN" data-tier="2d" data-motion="full">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_IN" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#F6EFE3" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin />
+    {italicHeadline && <link rel="preload" href="/fonts/fraunces-italic.woff2" as="font" type="font/woff2" crossorigin />}
+
+    <script is:inline>
+      (function () {
+        var d = document.documentElement, n = navigator, q = new URLSearchParams(location.search);
+        // Links to the old single-page site (#/shop, #/product/red-velvet …) still land somewhere.
+        var h = location.hash;
+        if (h.indexOf('#/') === 0) {
+          var p = h.slice(2), map = { '': '/', shop: '/shop', ritual: '/how-to-dip', story: '/story', contact: '/contact' };
+          var to = p.indexOf('product/') === 0 ? '/shop/' + p.slice(8) : map[p];
+          if (to) { location.replace(to); return; }
+        }
+        var saved = null;
+        try { saved = localStorage.getItem('nb:motion'); } catch (e) {}
+        var reduce = saved ? saved === 'reduced' : matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var c = n.connection || {};
+        var weak = (n.deviceMemory && n.deviceMemory <= 4) || (n.hardwareConcurrency && n.hardwareConcurrency <= 4) || c.saveData === true;
+        var force = q.get('3d');
+        d.dataset.motion = reduce ? 'reduced' : 'full';
+        d.dataset.tier = force === '1' ? '3d' : force === '0' ? '2d' : reduce || weak ? '2d' : '3d';
+        if (weak) d.dataset.weak = '';
+        // Debug clock for QA: ?at=23:47 pretends it's that time today in Kolkata.
+        var at = q.get('at');
+        if (at && /^\d{1,2}:\d{2}$/.test(at)) {
+          var parts = at.split(':'), ist = new Date(Date.now() + 330 * 60000);
+          var want = Date.UTC(ist.getUTCFullYear(), ist.getUTCMonth(), ist.getUTCDate(), +parts[0], +parts[1]) - 330 * 60000;
+          window.__nbClockOffset = want - Date.now();
+        }
+        var hr = new Date(Date.now() + (window.__nbClockOffset || 0) + 330 * 60000).getUTCHours();
+        if (hr >= 22 || hr < 3) d.dataset.shift = 'night';
+      })();
+    </script>
+    <slot name="head" />
+    {jsonLd.map((j) => <script type="application/ld+json" set:html={JSON.stringify(j)} />)}
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <EmergencyBanner />
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <StickyBar />
+    <Bag />
+    <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>

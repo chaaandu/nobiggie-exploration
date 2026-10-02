@@ -1,0 +1,157 @@
+---
+import CupArt from './CupArt.astro';
+import QtyStepper from './QtyStepper.astro';
+import { dips, ordering, type Flavour } from '../../content/facts';
+import { rupees } from '../../lib/format';
+
+interface Props {
+  flavour: Flavour;
+  headingLevel?: 'h2' | 'h3';
+}
+const { flavour: f, headingLevel = 'h3' } = Astro.props;
+const H = headingLevel;
+const max = ordering.maxCupsPerOrder ?? 20;
+---
+
+<article class="card" data-card={f.id} style={`--sw:${f.look.swatch}`}>
+  <a class="card-art" href={`/shop/${f.id}`} tabindex="-1" aria-hidden="true">
+    <span class="tape" aria-hidden="true"></span>
+    <CupArt flavour={f.id} />
+  </a>
+  <div class="card-body">
+    <p class="card-tag hand">{f.tag}</p>
+    <H class="card-name"><a href={`/shop/${f.id}`}>{f.name}</a></H>
+    <p class="card-dip"><span class="dot" aria-hidden="true"></span>+ {dips[f.dip].short}</p>
+    <p class="card-note">{f.tasteNote}</p>
+    <p class="card-price">
+      <span class="price num">{rupees(f.price)}</span>
+      {f.compareAt && <s class="was num">{rupees(f.compareAt)}</s>}
+      <span class="unit">per cup, dip included</span>
+    </p>
+  </div>
+  <div class="card-buy">
+    <QtyStepper for={f.id} label={`How many cups of ${f.name}`} max={max} />
+    <button type="button" class="btn add" data-add={f.id} data-add-qty-from={f.id}>
+      <span class="add-label" data-add-label>Add</span>
+    </button>
+  </div>
+</article>
+
+<style>
+  .card {
+    display: grid;
+    grid-template-columns: minmax(112px, 38%) 1fr;
+    gap: 14px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    box-shadow: var(--shadow-2);
+    padding: 12px;
+    position: relative;
+  }
+  .card-art {
+    position: relative;
+    display: block;
+    border-radius: 10px;
+    background: radial-gradient(110% 80% at 50% 20%, #FBF5EA 0%, var(--cream-2) 75%);
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+    align-self: start;
+  }
+  .tape {
+    position: absolute;
+    z-index: 1;
+    top: 6px;
+    left: -10px;
+    width: 64px;
+    height: 20px;
+    background: rgb(243 230 207 / 0.82);
+    box-shadow: 0 1px 2px rgb(59 36 22 / 0.18);
+    transform: rotate(-24deg);
+    clip-path: polygon(3% 0, 97% 8%, 100% 92%, 0 100%);
+  }
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .card-tag {
+    font-size: 1.15rem;
+    transform: rotate(-2deg);
+    transform-origin: left;
+  }
+  .card-name {
+    font-size: clamp(1.55rem, 1.2rem + 1.2vw, 2.1rem);
+  }
+  .card-name a {
+    text-decoration: none;
+  }
+  .card-name a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+  .card-dip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sw);
+  }
+  .card-note {
+    color: var(--cocoa-2);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .card-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+    margin-top: 6px;
+  }
+  .price {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.6rem;
+  }
+  .was {
+    color: var(--cocoa-2);
+  }
+  .unit {
+    font-size: var(--t-tiny);
+    color: var(--cocoa-2);
+  }
+  .card-buy {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+  }
+  .card-buy :global(.stepper) {
+    justify-self: start;
+  }
+  .add {
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .card {
+      grid-template-columns: 1fr;
+      padding: 14px 14px 18px;
+    }
+    .card-art {
+      aspect-ratio: 1 / 1;
+    }
+    .card-body {
+      padding-inline: 4px;
+    }
+  }
+</style>

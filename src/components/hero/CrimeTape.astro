@@ -1,0 +1,117 @@
+---
+/** The empty-cup ending. Tape is the one place we shout. */
+import { defaultFlavour } from '../../content/facts';
+import { quickOrderHref } from '../../lib/checkout';
+
+const one = 'CASE FILE #002 · THE CUP IS EMPTY · SUSPECT: YOU · ';
+const two = 'CRIME SCENE · DO NOT CROSS · ';
+---
+
+<div class="crime" data-crime hidden>
+  <div class="tape tape-a" aria-hidden="true"><span>{one.repeat(6)}</span></div>
+  <div class="tape tape-b" aria-hidden="true"><span>{two.repeat(8)}</span></div>
+  <div class="case" role="status">
+    <p class="case-no">Case file #002</p>
+    <p class="case-line">The cup is empty. Suspect: you.</p>
+    <a class="btn" href={quickOrderHref(defaultFlavour)} data-act="refill-order" data-order>Refill (order another)</a>
+    <button class="case-again" data-act="refill">Or just refill this one</button>
+  </div>
+</div>
+
+<style>
+  .crime {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .crime[hidden] {
+    display: none;
+  }
+  .tape {
+    position: absolute;
+    left: -10%;
+    width: 120%;
+    height: clamp(34px, 6vw, 52px);
+    display: flex;
+    align-items: center;
+    background: var(--tape);
+    color: var(--ink);
+    box-shadow: 0 6px 14px -6px rgb(30 18 10 / 0.45);
+    overflow: hidden;
+    font: 700 clamp(0.8rem, 0.6rem + 0.8vw, 1.1rem) / 1 var(--f-ui);
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    transition: transform 520ms var(--ease-out);
+  }
+  .tape::before,
+  .tape::after {
+    content: '';
+    position: absolute;
+    inset: 4px 0 auto;
+    height: 2px;
+    background: rgb(30 18 10 / 0.75);
+  }
+  .tape::after {
+    inset: auto 0 4px;
+  }
+  .tape-a {
+    top: 30%;
+    transform: rotate(-9deg) translateX(-110%);
+  }
+  .tape-b {
+    top: 58%;
+    transform: rotate(6deg) translateX(110%);
+    transition-delay: 90ms;
+  }
+  .crime[data-on] .tape-a {
+    transform: rotate(-9deg) translateX(0);
+  }
+  .crime[data-on] .tape-b {
+    transform: rotate(6deg) translateX(0);
+  }
+  .case {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 20px 14px;
+    background: var(--paper);
+    border-radius: var(--r-1);
+    box-shadow: var(--shadow-3);
+    text-align: center;
+    transform: rotate(-2deg) scale(0.92);
+    opacity: 0;
+    transition: transform 420ms var(--spring) 380ms, opacity 200ms ease 380ms;
+    pointer-events: auto;
+    max-width: min(88%, 340px);
+  }
+  .crime[data-on] .case {
+    transform: rotate(-2deg) scale(1);
+    opacity: 1;
+  }
+  .case-no {
+    font-family: var(--f-hand);
+    font-size: 1.3rem;
+    color: var(--velvet);
+  }
+  .case-line {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 1.45rem;
+    line-height: 1.1;
+  }
+  .case-again {
+    border: 0;
+    background: none;
+    color: var(--cocoa-2);
+    font-size: var(--t-small);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    min-height: var(--tap);
+  }
+</style>

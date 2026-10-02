@@ -1,0 +1,263 @@
+---
+/**
+ * Gift-tag maker. Type the names, see the tag, download it as a PNG for WhatsApp or
+ * Instagram (or share it straight from the phone). Whatever you write rides along into the
+ * order as the gift note.
+ */
+import Icon from '../ui/Icon.astro';
+---
+
+<div class="tagger" data-tagger>
+  <div class="tag-stage">
+    <svg class="string" viewBox="0 0 120 80" aria-hidden="true"><path d="M2 8c30 4 52 22 72 30s30 4 44-6" /></svg>
+    <div class="tag" aria-label="Gift tag preview" role="img" data-tag-preview>
+      <span class="hole" aria-hidden="true"></span>
+      <p><span class="k">to</span> <span class="v" data-tag-to>the host</span></p>
+      <p><span class="k">from</span> <span class="v" data-tag-from>your favourite guest</span></p>
+      <p class="tag-note" data-tag-note>open immediately. sharing optional.</p>
+      <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-8.6-9C2.4 8 4.3 5 7.4 5c2 0 3.4 1.2 4.6 2.8C13.2 6.2 14.6 5 16.6 5c3.1 0 5 3 4 6-1.6 4.6-8.6 9-8.6 9z" /></svg>
+    </div>
+  </div>
+
+  <div class="tag-form">
+    <div class="field">
+      <label for="tag-to">To</label>
+      <input id="tag-to" class="input" maxlength="28" autocomplete="off" placeholder="the host" data-tag-input="to" />
+    </div>
+    <div class="field">
+      <label for="tag-from">From</label>
+      <input id="tag-from" class="input" maxlength="28" autocomplete="off" placeholder="your favourite guest" data-tag-input="from" />
+    </div>
+    <div class="field">
+      <label for="tag-msg">Note <span class="opt">(optional)</span></label>
+      <input id="tag-msg" class="input" maxlength="48" autocomplete="off" placeholder="open immediately. sharing optional." data-tag-input="message" />
+    </div>
+    <div class="tag-actions">
+      <button type="button" class="btn btn-ghost btn-sm" data-tag-download><Icon name="download" size={18} /> Download tag</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-tag-share hidden><Icon name="share" size={18} /> Share</button>
+    </div>
+    <p class="small muted" data-tag-status aria-live="polite">The tag goes into your order too.</p>
+  </div>
+</div>
+
+<script>
+  import { getBag, setNote } from '../../lib/bag';
+  import { track } from '../../lib/track';
+
+  const root = document.querySelector<HTMLElement>('[data-tagger]');
+  if (root) {
+    const inputs = [...root.querySelectorAll<HTMLInputElement>('[data-tag-input]')];
+    const out = {
+      to: root.querySelector<HTMLElement>('[data-tag-to]')!,
+      from: root.querySelector<HTMLElement>('[data-tag-from]')!,
+      message: root.querySelector<HTMLElement>('[data-tag-note]')!,
+    };
+    const status = root.querySelector<HTMLElement>('[data-tag-status]')!;
+    const shareBtn = root.querySelector<HTMLButtonElement>('[data-tag-share]')!;
+    type Key = keyof typeof out;
+
+    const val = (k: Key) => inputs.find((i) => i.dataset.tagInput === k)!;
+    const shown = (k: Key) => val(k).value.trim() || val(k).placeholder;
+
+    // Start from whatever's already in the bag, so the tag and the order never disagree.
+    const note = getBag().note;
+    (['to', 'from', 'message'] as Key[]).forEach((k) => {
+      val(k).value = note[k] ?? '';
+      out[k].textContent = shown(k);
+    });
+
+    let t = 0;
+    inputs.forEach((i) =>
+      i.addEventListener('input', () => {
+        const k = i.dataset.tagInput as Key;
+        out[k].textContent = shown(k);
+        clearTimeout(t);
+        t = window.setTimeout(() => setNote({ [k]: i.value.trim() }), 250);
+      }),
+    );
+
+    async function drawPng(): Promise<Blob> {
+      await document.fonts.load('64px "Gochi Hand"');
+      await document.fonts.load('600 40px "Fraunces"');
+      const W = 1080, H = 1350;
+      const c = document.createElement('canvas');
+      c.width = W;
+      c.height = H;
+      const g = c.getContext('2d')!;
+      g.fillStyle = '#F6EFE3';
+      g.fillRect(0, 0, W, H);
+      // string
+      g.strokeStyle = '#B3262E';
+      g.lineWidth = 6;
+      g.lineCap = 'round';
+      g.beginPath();
+      g.moveTo(120, 140);
+      g.bezierCurveTo(330, 170, 420, 300, 540, 330);
+      g.stroke();
+      // tag body, tilted like it's hanging
+      g.save();
+      g.translate(540, 700);
+      g.rotate(-0.06);
+      const tw = 760, th = 620;
+      g.shadowColor = 'rgba(59,36,22,0.28)';
+      g.shadowBlur = 40;
+      g.shadowOffsetY = 18;
+      g.fillStyle = '#D9C3A0';
+      g.beginPath();
+      g.moveTo(-tw / 2 + 120, -th / 2);
+      g.lineTo(tw / 2, -th / 2);
+      g.lineTo(tw / 2, th / 2);
+      g.lineTo(-tw / 2 + 120, th / 2);
+      g.lineTo(-tw / 2, 0);
+      g.closePath();
+      g.fill();
+      g.shadowColor = 'transparent';
+      g.fillStyle = '#F6EFE3';
+      g.beginPath();
+      g.arc(-tw / 2 + 90, 0, 22, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#3B2416';
+      g.textBaseline = 'alphabetic';
+      const row = (k: string, v: string, y: number) => {
+        g.font = '44px "Gochi Hand"';
+        g.fillStyle = '#B3262E';
+        g.fillText(k, -tw / 2 + 170, y);
+        g.font = '74px "Gochi Hand"';
+        g.fillStyle = '#3B2416';
+        g.fillText(v, -tw / 2 + 170 + (k === 'to' ? 70 : 110), y, tw - 300);
+      };
+      row('to', shown('to'), -120);
+      row('from', shown('from'), 20);
+      g.font = '44px "Gochi Hand"';
+      g.fillStyle = '#6B4E3B';
+      g.fillText(shown('message'), -tw / 2 + 170, 150, tw - 230);
+      g.restore();
+      // sign-off
+      g.textAlign = 'center';
+      g.fillStyle = '#3B2416';
+      g.font = '600 46px "Fraunces"';
+      g.fillText('No Biggie', W / 2, H - 150);
+      g.font = '40px "Gochi Hand"';
+      g.fillStyle = '#B3262E';
+      g.fillText('Dip. Dunk. Repeat.  ·  nobiggie.shop', W / 2, H - 92);
+      return new Promise((res) => c.toBlob((b) => res(b!), 'image/png'));
+    }
+
+    const fileName = () => `no-biggie-tag-${(val('to').value.trim() || 'host').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
+
+    root.querySelector('[data-tag-download]')!.addEventListener('click', async () => {
+      const blob = await drawPng();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName();
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      status.textContent = 'Saved. It’s also in your order as the gift note.';
+      track('gift_tag', { action: 'download' });
+    });
+
+    const probe = new File([new Blob()], 'x.png', { type: 'image/png' });
+    if (navigator.canShare?.({ files: [probe] })) {
+      shareBtn.hidden = false;
+      shareBtn.addEventListener('click', async () => {
+        const file = new File([await drawPng()], fileName(), { type: 'image/png' });
+        try {
+          await navigator.share({ files: [file], text: 'A cup of No Biggie is on its way. nobiggie.shop' });
+          track('gift_tag', { action: 'share' });
+        } catch {
+          /* closed the share sheet */
+        }
+      });
+    }
+  }
+</script>
+
+<style>
+  .tagger {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .tag-stage {
+    position: relative;
+    padding: 26px 0 8px 40px;
+  }
+  .string {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    fill: none;
+    stroke: var(--velvet);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+  .tag {
+    position: relative;
+    min-height: 210px;
+    padding: 30px 26px 26px 76px;
+    background: var(--kraft);
+    background-image: url('/textures/grain.webp');
+    background-size: 180px;
+    clip-path: polygon(48px 0, 100% 0, 100% 100%, 48px 100%, 0 50%);
+    filter: drop-shadow(0 10px 16px rgb(59 36 22 / 0.25));
+    transform: rotate(-3deg);
+    font-family: var(--f-hand);
+    color: var(--cocoa);
+  }
+  .hole {
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    margin-top: -9px;
+    border-radius: 50%;
+    background: var(--cream);
+    box-shadow: inset 0 1px 2px rgb(59 36 22 / 0.4);
+  }
+  .tag p {
+    font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.1rem);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .k {
+    color: var(--velvet);
+    font-size: 0.7em;
+    margin-right: 4px;
+  }
+  .tag-note {
+    margin-top: 10px;
+    font-size: 1.25rem !important;
+    color: var(--cocoa-2);
+  }
+  .heart {
+    position: absolute;
+    right: 22px;
+    bottom: 18px;
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: var(--velvet);
+    stroke-width: 2;
+    transform: rotate(10deg);
+  }
+  .tag-form {
+    display: grid;
+    gap: 14px;
+  }
+  .opt {
+    font-weight: 400;
+    color: var(--cocoa-2);
+  }
+  .tag-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  @media (min-width: 900px) {
+    .tagger {
+      grid-template-columns: 1.1fr 1fr;
+      align-items: center;
+    }
+  }
+</style>

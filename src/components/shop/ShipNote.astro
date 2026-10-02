@@ -1,0 +1,52 @@
+---
+/** How it ships: only confirmed facts, plus the live cut-off when we know it. */
+import Icon from '../ui/Icon.astro';
+import { brand, delivery, product } from '../../content/facts';
+import { cutoffCopy } from '../../lib/cutoff-copy';
+import { rupees } from '../../lib/format';
+---
+
+<aside class="ship" aria-label="How it ships">
+  <div class="ship-row">
+    <Icon name="clock" />
+    <p data-cutoff="long">{cutoffCopy({ kind: 'unknown' }, 'long')}</p>
+  </div>
+  <div class="ship-row">
+    <Icon name="pin" />
+    <p>
+      {brand.city} only, for now.
+      {typeof delivery.fee === 'number' && (delivery.fee === 0 ? ' Delivery is free.' : ` Delivery ${rupees(delivery.fee)}${delivery.freeAbove ? `, free over ${rupees(delivery.freeAbove)}` : ''}.`)}
+    </p>
+  </div>
+  <div class="ship-row">
+    <Icon name="lid" />
+    <p>Best within {product.bestWithinDays} days. The lid reseals, so the rest keeps for tomorrow.</p>
+  </div>
+</aside>
+
+<style>
+  .ship {
+    margin-top: var(--s-6);
+    display: grid;
+    gap: 12px;
+    padding: 18px 20px;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: var(--r-3);
+    background: rgb(251 247 240 / 0.6);
+  }
+  .ship-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .ship-row :global(svg) {
+    color: var(--velvet);
+    margin-top: 1px;
+  }
+  @media (min-width: 900px) {
+    .ship {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+  }
+</style>

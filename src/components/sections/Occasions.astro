@@ -1,0 +1,251 @@
+---
+/** Desk / Host gift / Sofa: one tabbed section, each tab ending in a recommendation. */
+import GiftTag from './GiftTag.astro';
+import Ticket from './Ticket.astro';
+import Rec from '../shop/Rec.astro';
+import { occasions } from '../../content/facts';
+
+const tabs = [
+  { id: 'desk', label: 'Desk' },
+  { id: 'host', label: 'Host gift' },
+  { id: 'sofa', label: 'Sofa' },
+] as const;
+---
+
+<section class="section occ" id="occasions" aria-labelledby="occ-title" data-tabs>
+  <div class="wrap">
+    <header class="stack stack-4 occ-head">
+      <p class="kicker">good for</p>
+      <h2 id="occ-title">Where a cup usually ends up.</h2>
+    </header>
+
+    <div class="tablist" role="tablist" aria-label="Occasion">
+      {
+        tabs.map((t, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`tab-${t.id}`}
+            aria-controls={`panel-${t.id}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+            data-tab={t.id}
+          >
+            {t.label}
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="panel" role="tabpanel" id="panel-desk" aria-labelledby="tab-desk" data-panel="desk">
+      <div class="panel-copy stack stack-4">
+        <h3>The best meeting on your calendar.</h3>
+        <p class="lede">
+          Somewhere between the third call and the fortieth open tab, you need a few minutes that are just yours. Keep a cup on the
+          desk, pop the lid, dunk a few, and head back in. No plate, no crumbs in the keyboard, no leaving your chair.
+        </p>
+        <Rec flavour={occasions.desk.flavour} qty={occasions.desk.qty} />
+      </div>
+      <div class="todo" aria-label="A to-do list">
+        <p class="todo-head hand">To do:</p>
+        <ul role="list">
+          <li class="done"><span class="tick" aria-hidden="true"></span>finish the deck</li>
+          <li class="done"><span class="tick" aria-hidden="true"></span>reply to client</li>
+          <li>
+            <label class="treat">
+              <input type="checkbox" data-treat />
+              <span class="tick" aria-hidden="true"></span>dip. dunk. repeat.
+            </label>
+          </li>
+        </ul>
+        <p class="todo-done hand" data-treat-done hidden>good. now back to it.</p>
+      </div>
+    </div>
+
+    <div class="panel" role="tabpanel" id="panel-host" aria-labelledby="tab-host" data-panel="host" hidden>
+      <div class="panel-copy stack stack-4">
+        <h3>Never arrive empty-handed.</h3>
+        <p class="lede">
+          Flowers need a vase, wine needs a corkscrew, and a box of sweets waits until you&rsquo;ve gone home. A cup of No Biggie gets
+          opened the minute you walk in: lid off, everyone in. It travels sealed, fits in one hand, and makes you the guest they invite
+          back.
+        </p>
+        <Rec flavour={occasions.host.flavour} qty={occasions.host.qty} />
+      </div>
+      <GiftTag />
+    </div>
+
+    <div class="panel" role="tabpanel" id="panel-sofa" aria-labelledby="tab-sofa" data-panel="sofa" hidden>
+      <div class="panel-copy stack stack-4">
+        <h3>Popcorn had a good run.</h3>
+        <p class="lede">
+          Date night on the sofa, or the whole gang squeezed in for a rewatch: one cup on the coffee table and everyone reaches in. No
+          bowl to pass round, no kernels down the cushions, and the dip&rsquo;s right there in the lid for the slow scenes.
+        </p>
+      </div>
+      <Ticket flavour={occasions.sofa.flavour} qty={occasions.sofa.qty} />
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const show = (tab: HTMLButtonElement, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        root.querySelector<HTMLElement>(`#${t.getAttribute('aria-controls')}`)!.hidden = !on;
+      });
+      if (focus) tab.focus();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => show(t));
+      t.addEventListener('keydown', (e) => {
+        const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+        if (next === undefined) return;
+        e.preventDefault();
+        show(tabs[(next + tabs.length) % tabs.length], true);
+      });
+    });
+    const treat = root.querySelector<HTMLInputElement>('[data-treat]');
+    treat?.addEventListener('change', () => {
+      root.querySelector<HTMLElement>('[data-treat-done]')!.hidden = !treat.checked;
+    });
+  });
+</script>
+
+<style>
+  .occ-head {
+    margin-bottom: var(--s-6);
+  }
+  .tablist {
+    display: inline-grid;
+    grid-auto-flow: column;
+    gap: 4px;
+    padding: 5px;
+    border-radius: var(--r-pill);
+    background: var(--cream-2);
+    border: 1px solid var(--line);
+    margin-bottom: var(--s-6);
+    max-width: 100%;
+  }
+  [role='tab'] {
+    min-height: var(--tap);
+    padding: 0 18px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: transparent;
+    font-weight: 600;
+    color: var(--cocoa-2);
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  [role='tab'][aria-selected='true'] {
+    background: var(--paper);
+    color: var(--cocoa);
+    box-shadow: var(--shadow-1);
+  }
+  .panel {
+    display: grid;
+    gap: var(--s-7);
+    align-items: start;
+  }
+  .panel[hidden] {
+    display: none;
+  }
+  .panel h3 {
+    font-size: clamp(1.9rem, 1.3rem + 2.2vw, 3rem);
+    max-width: 16ch;
+  }
+
+  .todo {
+    position: relative;
+    background: #FFFDF7;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 33px, rgb(91 120 160 / 0.2) 33px 34px);
+    background-position: 0 52px;
+    padding: 18px 22px 22px 46px;
+    border-radius: 3px;
+    box-shadow: var(--shadow-2);
+    transform: rotate(1.5deg);
+    max-width: 380px;
+    font-family: var(--f-hand);
+    font-size: 1.45rem;
+    line-height: 34px;
+  }
+  .todo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 32px;
+    width: 1.5px;
+    background: rgb(179 38 46 / 0.45);
+  }
+  .todo-head {
+    color: var(--cocoa);
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+  }
+  .todo li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tick {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--cocoa);
+    border-radius: 4px;
+    flex: none;
+    position: relative;
+  }
+  .done {
+    color: var(--cocoa-2);
+    text-decoration: line-through;
+    text-decoration-color: var(--velvet);
+  }
+  .done .tick::after,
+  .treat input:checked + .tick::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: -6px;
+    width: 8px;
+    height: 16px;
+    border: solid var(--velvet);
+    border-width: 0 3px 3px 0;
+    transform: rotate(40deg);
+  }
+  .treat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap);
+    cursor: pointer;
+    color: var(--velvet);
+  }
+  .treat input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .treat input:focus-visible + .tick {
+    outline: 3px solid var(--cocoa);
+    outline-offset: 3px;
+  }
+  .todo-done {
+    margin-top: 6px;
+    font-size: 1.2rem;
+    transform: rotate(-3deg);
+  }
+
+  @media (min-width: 900px) {
+    .panel {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-8);
+    }
+  }
+</style>

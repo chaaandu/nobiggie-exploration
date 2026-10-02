@@ -1,0 +1,68 @@
+---
+import { cutoffCopy } from '../../lib/cutoff-copy';
+---
+
+<div class="sos-banner on-dark" data-sos-banner>
+  <div class="wrap sos-row">
+    <span class="siren" aria-hidden="true"></span>
+    <p>
+      <strong>Cookie emergency in progress.</strong>
+      <span data-cutoff="banner">{cutoffCopy({ kind: 'unknown' }, 'banner')}</span>
+    </p>
+    <a class="sos-link" href="/#emergency">Send help</a>
+  </div>
+</div>
+
+<script>
+  import '../../scripts/live';
+</script>
+
+<style>
+  .sos-banner {
+    display: none;
+    background: var(--night);
+    color: var(--night-text);
+    font-size: var(--t-small);
+    line-height: 1.35;
+  }
+  :global(html[data-shift='night']) .sos-banner {
+    display: block;
+  }
+  .sos-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding-block: 6px;
+  }
+  .sos-row p {
+    flex: 1;
+    color: var(--night-soft);
+  }
+  .sos-row strong {
+    color: var(--night-text);
+    font-weight: 600;
+  }
+  .siren {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #FF5A4E;
+    box-shadow: 0 0 0 0 rgb(255 90 78 / 0.6);
+    animation: siren 1.6s ease-out infinite;
+    flex: none;
+  }
+  @keyframes siren {
+    0% { box-shadow: 0 0 0 0 rgb(255 90 78 / 0.55); }
+    80%, 100% { box-shadow: 0 0 0 12px rgb(255 90 78 / 0); }
+  }
+  .sos-link {
+    color: var(--night-text);
+    font-weight: 600;
+    white-space: nowrap;
+    min-height: var(--tap);
+    display: inline-flex;
+    align-items: center;
+    text-underline-offset: 3px;
+  }
+</style>

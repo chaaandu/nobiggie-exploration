@@ -1,0 +1,68 @@
+---
+/** "Recommended: 2 × Red Velvet · ₹538 [Add]" with the feedback on the button itself. */
+import { dips, flavourById, type FlavourId } from '../../content/facts';
+import { rupees } from '../../lib/format';
+
+interface Props {
+  flavour: FlavourId;
+  qty: number;
+  label?: string;
+  class?: string;
+}
+const { flavour, qty, label = 'Recommended', class: cls } = Astro.props;
+const f = flavourById(flavour);
+---
+
+<div class:list={['rec', cls]} style={`--sw:${f.look.swatch}`}>
+  <p class="rec-text">
+    <span class="rec-k">{label}</span>
+    <span class="rec-v"><span class="dot" aria-hidden="true"></span>{qty} &times; {f.name}</span>
+    <span class="rec-sub">{dips[f.dip].short} &middot; <span class="num">{rupees(qty * f.price)}</span></span>
+  </p>
+  <button type="button" class="btn btn-cocoa rec-add" data-add={f.id} data-add-qty={qty}>
+    <span data-add-label>Add {qty > 1 ? `${qty} cups` : 'to bag'}</span>
+  </button>
+</div>
+
+<style>
+  .rec {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 18px;
+    padding: 14px 14px 14px 18px;
+    border-radius: var(--r-3);
+    background: var(--paper);
+    border: 1.5px dashed var(--line-strong);
+  }
+  .rec-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .rec-k {
+    font-family: var(--f-hand);
+    font-size: 1.2rem;
+    color: var(--velvet);
+    line-height: 1;
+  }
+  .rec-v {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--f-display);
+    font-weight: 650;
+    font-size: 1.35rem;
+  }
+  .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--sw);
+  }
+  .rec-sub {
+    color: var(--cocoa-2);
+    font-size: 0.92rem;
+  }
+</style>

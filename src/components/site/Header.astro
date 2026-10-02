@@ -1,0 +1,202 @@
+---
+import Logo from './Logo.astro';
+import Icon from '../ui/Icon.astro';
+import { defaultFlavour } from '../../content/facts';
+import { quickOrderHref } from '../../lib/checkout';
+
+const path = Astro.url.pathname.replace(/\.html$/, '');
+const nav = [
+  { href: '/shop', label: 'Shop' },
+  { href: '/how-to-dip', label: 'How to dip' },
+  { href: '/story', label: 'Story' },
+  { href: '/b2b', label: 'B2B' },
+  { href: '/contact', label: 'Contact' },
+];
+const current = (href: string) => (path === href || path.startsWith(href + '/') ? 'page' : undefined);
+---
+
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="brand" href="/" aria-label="No Biggie, home">
+      <Logo />
+    </a>
+
+    <nav class="nav" aria-label="Main">
+      {nav.map((n) => <a href={n.href} aria-current={current(n.href)} data-astro-prefetch>{n.label}</a>)}
+    </nav>
+
+    <div class="head-actions">
+      <a class="bag-btn" href="/shop" data-bag-open aria-label="Bag, 0 items">
+        <Icon name="bag" />
+        <span class="bag-count num" data-bag-count aria-hidden="true">0</span>
+      </a>
+      <a class="btn btn-sm head-order" href={quickOrderHref(defaultFlavour)} data-order>Order</a>
+      <button class="icon-btn menu-btn" popovertarget="site-menu" aria-label="Menu">
+        <Icon name="menu" />
+      </button>
+    </div>
+  </div>
+
+  <div id="site-menu" class="menu" popover>
+    <div class="menu-head">
+      <Logo />
+      <button class="icon-btn" popovertarget="site-menu" popovertargetaction="hide" aria-label="Close menu">
+        <Icon name="close" />
+      </button>
+    </div>
+    <nav aria-label="Main">
+      <ul role="list">
+        <li><a href="/" aria-current={path === '/' ? 'page' : undefined}>Home</a></li>
+        {nav.map((n) => <li><a href={n.href} aria-current={current(n.href)}>{n.label}</a></li>)}
+      </ul>
+    </nav>
+    <p class="hand menu-note">Dip. Dunk. Repeat.</p>
+  </div>
+</header>
+
+<style>
+  .site-head {
+    position: relative;
+    z-index: 40;
+  }
+  .head-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+    min-height: 68px;
+  }
+  .brand {
+    text-decoration: none;
+    margin-right: auto;
+    display: inline-flex;
+    min-height: var(--tap);
+    align-items: center;
+  }
+  .nav {
+    display: none;
+    gap: 2px;
+  }
+  .nav a {
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.97rem;
+    padding: 10px 14px;
+    border-radius: var(--r-pill);
+    color: var(--cocoa-2);
+  }
+  .nav a:hover {
+    color: var(--cocoa);
+    background: rgb(59 36 22 / 0.06);
+  }
+  .nav a[aria-current='page'] {
+    color: var(--cocoa);
+    background: var(--cream-2);
+  }
+  .head-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .bag-btn {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    border-radius: var(--r-pill);
+    color: var(--cocoa);
+  }
+  .bag-btn:hover {
+    background: rgb(59 36 22 / 0.07);
+  }
+  .bag-count {
+    position: absolute;
+    top: 3px;
+    right: 1px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: var(--r-pill);
+    background: var(--velvet);
+    color: var(--cream);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 19px;
+    text-align: center;
+    transform: scale(0);
+    transition: transform var(--d-2) var(--spring);
+  }
+  .bag-count[data-n] {
+    transform: scale(1);
+  }
+  .head-order {
+    display: none;
+    margin-left: 6px;
+  }
+
+  /* mobile menu (popover: Esc and tap-outside close it, no script needed) */
+  .menu {
+    inset: 0 0 auto 0;
+    margin: 0;
+    width: 100%;
+    max-width: none;
+    border: 0;
+    padding: 14px var(--gutter) 28px;
+    background: var(--paper);
+    box-shadow: var(--shadow-3);
+    border-radius: 0 0 var(--r-3) var(--r-3);
+  }
+  .menu::backdrop {
+    background: rgb(30 18 10 / 0.35);
+  }
+  .menu-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .menu ul {
+    display: flex;
+    flex-direction: column;
+  }
+  .menu li a {
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    font-family: var(--f-display);
+    font-size: 1.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .menu li a[aria-current='page'] {
+    font-style: italic;
+    color: var(--velvet);
+  }
+  .menu-note {
+    margin-top: 18px;
+    transform: rotate(-2deg);
+  }
+
+  @media (min-width: 900px) {
+    .nav {
+      display: flex;
+    }
+    .menu-btn {
+      display: none;
+    }
+    .head-order {
+      display: inline-flex;
+    }
+    .site-head {
+      position: sticky;
+      top: 0;
+      background: color-mix(in srgb, var(--cream) 94%, transparent);
+      border-bottom: 1px solid transparent;
+      transition: border-color var(--d-2);
+    }
+    .site-head[data-scrolled] {
+      border-bottom-color: var(--line);
+    }
+  }
+</style>

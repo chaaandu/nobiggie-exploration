@@ -1,0 +1,64 @@
+---
+/** − 1 + with 44px targets. Pairs with an Add button via data-qty-for. */
+interface Props {
+  for: string;
+  label: string;
+  value?: number;
+  max?: number;
+}
+const { for: forId, label, value = 1, max = 20 } = Astro.props;
+---
+
+<div class="stepper" role="group" aria-label={label} data-stepper data-qty-for={forId} data-max={max}>
+  <button type="button" class="step" data-step="-1" aria-label="One fewer">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
+  </button>
+  <output class="qty num" data-qty aria-live="polite">{value}</output>
+  <button type="button" class="step" data-step="1" aria-label="One more">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
+  </button>
+</div>
+
+<style>
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--paper);
+    height: 52px;
+    padding: 3px;
+  }
+  .step {
+    width: var(--tap);
+    height: var(--tap);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    color: var(--cocoa);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .step:hover {
+    background: rgb(59 36 22 / 0.07);
+  }
+  .step:disabled {
+    opacity: 0.35;
+  }
+  .step svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+  .qty {
+    min-width: 2ch;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+</style>

@@ -1,0 +1,199 @@
+---
+/** Movie-night ticket. Drag the stub off (or press it) to reveal the recommended order. */
+import Rec from '../shop/Rec.astro';
+import type { FlavourId } from '../../content/facts';
+
+interface Props {
+  flavour: FlavourId;
+  qty: number;
+}
+const { flavour, qty } = Astro.props;
+---
+
+<div class="ticket-wrap" data-ticket>
+  <div class="ticket">
+    <div class="t-main">
+      <span class="t-label">Now showing</span>
+      <span class="t-title">Dip. Dunk. Repeat.</span>
+      <span class="t-admit">Admit two</span>
+      <span class="t-note">or the whole sofa</span>
+    </div>
+    <div class="t-under" aria-hidden="true">
+      <span class="t-label">Your order</span>
+      <span class="t-hand">see below</span>
+    </div>
+    <button class="t-stub" type="button" data-stub aria-label="Tear the stub to see the recommended order">
+      <span class="t-label">Seat</span>
+      <span class="t-seat">Sofa</span>
+      <span class="t-label">Row 1</span>
+      <span class="t-tear" aria-hidden="true">tear here &rarr;</span>
+    </button>
+  </div>
+  <div class="t-reveal" data-reveal hidden>
+    <Rec flavour={flavour} qty={qty} label="The stub says" />
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ticket]').forEach((wrap) => {
+    const stub = wrap.querySelector<HTMLButtonElement>('[data-stub]')!;
+    const reveal = wrap.querySelector<HTMLElement>('[data-reveal]')!;
+    let torn = false;
+    let start: { x: number; id: number } | null = null;
+
+    const tear = () => {
+      if (torn) return;
+      torn = true;
+      stub.dataset.torn = '';
+      stub.style.transform = '';
+      reveal.hidden = false;
+      stub.setAttribute('aria-hidden', 'true');
+      stub.tabIndex = -1;
+      reveal.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
+    };
+
+    stub.addEventListener('pointerdown', (e) => {
+      if (torn) return;
+      start = { x: e.clientX, id: e.pointerId };
+      stub.setPointerCapture(e.pointerId);
+    });
+    stub.addEventListener('pointermove', (e) => {
+      if (!start || e.pointerId !== start.id) return;
+      const dx = Math.max(0, e.clientX - start.x);
+      stub.style.transform = `translateX(${dx * 0.5}px) rotate(${Math.min(18, dx * 0.22)}deg)`;
+      if (dx > 70) {
+        start = null;
+        tear();
+      }
+    });
+    const end = (e: PointerEvent) => {
+      if (!start || e.pointerId !== start.id) return;
+      const moved = Math.abs(e.clientX - start.x) > 6;
+      start = null;
+      if (!moved) tear();
+      else if (!torn) stub.style.transform = '';
+    };
+    stub.addEventListener('pointerup', end);
+    stub.addEventListener('pointercancel', () => {
+      start = null;
+      if (!torn) stub.style.transform = '';
+    });
+    stub.addEventListener('click', (e) => {
+      if (e.detail === 0) tear();
+    });
+  });
+</script>
+
+<style>
+  .ticket-wrap {
+    display: grid;
+    gap: 18px;
+  }
+  .ticket {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 32%;
+    max-width: 520px;
+    filter: drop-shadow(0 12px 18px rgb(59 36 22 / 0.22));
+    transform: rotate(-1.5deg);
+  }
+  .t-main,
+  .t-stub,
+  .t-under {
+    background: #F7E9CF;
+    background-image: url('/textures/grain.webp');
+    background-size: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .t-main {
+    padding: 22px 20px 20px;
+    border-radius: 12px 0 0 12px;
+    border-right: 2px dashed rgb(59 36 22 / 0.35);
+    -webkit-mask: radial-gradient(circle 11px at 100% 0, transparent 98%, #000) top right / 100% 51% no-repeat,
+      radial-gradient(circle 11px at 100% 100%, transparent 98%, #000) bottom right / 100% 51% no-repeat;
+    mask: radial-gradient(circle 11px at 100% 0, transparent 98%, #000) top right / 100% 51% no-repeat,
+      radial-gradient(circle 11px at 100% 100%, transparent 98%, #000) bottom right / 100% 51% no-repeat;
+  }
+  .t-under {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: center;
+    align-items: center;
+    background: var(--velvet);
+    color: var(--cream);
+    border-radius: 0 12px 12px 0;
+  }
+  .t-under .t-label {
+    color: var(--cream);
+  }
+  .t-hand {
+    font-family: var(--f-hand);
+    font-size: 1.4rem;
+  }
+  .t-stub {
+    grid-column: 2;
+    grid-row: 1;
+    position: relative;
+    border: 0;
+    padding: 22px 16px 16px;
+    align-items: flex-start;
+    border-radius: 0 12px 12px 0;
+    color: var(--cocoa);
+    text-align: left;
+    cursor: grab;
+    touch-action: pan-y;
+    transform-origin: 0% 100%;
+    transition: transform 160ms ease-out;
+    -webkit-mask: radial-gradient(circle 11px at 0 0, transparent 98%, #000) top left / 100% 51% no-repeat,
+      radial-gradient(circle 11px at 0 100%, transparent 98%, #000) bottom left / 100% 51% no-repeat;
+    mask: radial-gradient(circle 11px at 0 0, transparent 98%, #000) top left / 100% 51% no-repeat,
+      radial-gradient(circle 11px at 0 100%, transparent 98%, #000) bottom left / 100% 51% no-repeat;
+  }
+  .t-stub[data-torn] {
+    transform: translate(40px, 120px) rotate(38deg) !important;
+    opacity: 0;
+    transition: transform 620ms cubic-bezier(0.4, 0, 0.9, 0.6), opacity 500ms ease 120ms;
+    pointer-events: none;
+  }
+  .t-label {
+    font: 600 0.7rem/1.2 var(--f-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cocoa-2);
+  }
+  .t-title {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-weight: 650;
+    font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem);
+    line-height: 1.02;
+    margin: 2px 0 8px;
+  }
+  .t-admit {
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .t-note {
+    font-family: var(--f-hand);
+    color: var(--velvet);
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  .t-seat {
+    font-family: var(--f-display);
+    font-weight: 650;
+    font-size: 1.6rem;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .t-tear {
+    margin-top: auto;
+    font-family: var(--f-hand);
+    color: var(--velvet);
+    font-size: 1.1rem;
+  }
+</style>

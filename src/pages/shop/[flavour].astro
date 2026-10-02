@@ -1,0 +1,309 @@
+---
+import Base from '../../layouts/Base.astro';
+import CupArt from '../../components/shop/CupArt.astro';
+import CupCard from '../../components/shop/CupCard.astro';
+import QtyStepper from '../../components/shop/QtyStepper.astro';
+import Todo from '../../components/site/Todo.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { dips, flavours, ordering, product, type Flavour } from '../../content/facts';
+import { quickOrderHref } from '../../lib/checkout';
+import { cutoffCopy } from '../../lib/cutoff-copy';
+import { rupees } from '../../lib/format';
+import { productLd } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return flavours.map((f) => ({ params: { flavour: f.id }, props: { f } }));
+}
+
+const { f } = Astro.props as { f: Flavour };
+const dip = dips[f.dip];
+const others = flavours.filter((x) => x.id !== f.id);
+const max = ordering.maxCupsPerOrder ?? 20;
+---
+
+<Base
+  title={`${f.name} mini cookies with ${dip.name.toLowerCase()} dip · No Biggie`}
+  description={`${f.tasteNote} ${rupees(f.price)} a cup, dip sealed in the lid. Made to order in Bangalore, sent out the same day.`}
+  image={`/og/${f.id}.png`}
+  type="product"
+  jsonLd={[productLd(f)]}
+>
+  <div class="wrap crumbs-nav">
+    <nav aria-label="Breadcrumb">
+      <ol role="list">
+        <li><a href="/shop">Shop</a></li>
+        <li aria-current="page">{f.name}</li>
+      </ol>
+    </nav>
+  </div>
+
+  <article class="wrap product" data-product={f.id} style={`--sw:${f.look.swatch}`} data-bar-trigger>
+    <div class="art">
+      <span class="tape" aria-hidden="true"></span>
+      <CupArt flavour={f.id} eager sizes="(min-width: 900px) 560px, 92vw" />
+      <p class="art-note hand" aria-hidden="true">photo coming soon. this is our 3D cup.</p>
+    </div>
+
+    <div class="info stack stack-4">
+      <p class="tag hand">{f.tag}</p>
+      <h1>{f.name}</h1>
+      <p class="dip-line"><span class="dot" aria-hidden="true"></span>+ {dip.short}, sealed in the lid</p>
+      <p class="price-line">
+        <span class="price num">{rupees(f.price)}</span>
+        {f.compareAt && <s class="num">{rupees(f.compareAt)}</s>}
+        <span class="unit">per cup, dip included</span>
+      </p>
+      <p class="lede">{f.blurb}</p>
+
+      <div class="buy">
+        <QtyStepper for={f.id} label={`How many cups of ${f.name}`} max={max} />
+        <button type="button" class="btn add" data-add={f.id} data-add-qty-from={f.id}>
+          <span data-add-label>Add to bag</span>
+        </button>
+      </div>
+      <a class="order-now link" href={quickOrderHref(f.id)} data-order data-order-flavour={f.id}>Or order one straight away <Icon name="arrow" size={18} /></a>
+
+      <p class="cutoff"><Icon name="clock" size={18} /><span data-cutoff="long">{cutoffCopy({ kind: 'unknown' }, 'long')}</span></p>
+
+      <ul class="notes" role="list">
+        {f.notes.map((n) => <li>{n}</li>)}
+      </ul>
+
+      <dl class="specs">
+        {
+          f.specs.map(([k, v]) => (
+            <div>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))
+        }
+        <div>
+          <dt>Best within</dt>
+          <dd>{product.bestWithinDays} days</dd>
+        </div>
+        <div>
+          <dt>Allergens</dt>
+          <dd>{product.allergens ?? <Todo note="allergens"><span>Ask us on WhatsApp</span></Todo>}</dd>
+        </div>
+      </dl>
+
+      <div class="dip-card">
+        <p class="hand">the dip</p>
+        <h2>{dip.name}</h2>
+        <p>{dip.desc}</p>
+      </div>
+    </div>
+  </article>
+
+  <section class="wrap also" aria-labelledby="also-title">
+    <h2 id="also-title">Also in the range</h2>
+    <div class="also-grid">
+      {others.map((o) => <CupCard flavour={o} />)}
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { setCurrentFlavour } from '../../lib/current-flavour';
+  import type { FlavourId } from '../../content/facts';
+
+  const id = document.querySelector<HTMLElement>('[data-product]')?.dataset.product as FlavourId | undefined;
+  if (id) setCurrentFlavour(id, 'product');
+</script>
+
+<style>
+  .crumbs-nav {
+    padding-top: 12px;
+  }
+  .crumbs-nav ol {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--t-small);
+    color: var(--cocoa-2);
+  }
+  .crumbs-nav li + li::before {
+    content: '/';
+    margin-right: 8px;
+    color: var(--line-strong);
+  }
+  .crumbs-nav a {
+    color: var(--cocoa-2);
+    min-height: var(--tap);
+    display: inline-flex;
+    align-items: center;
+  }
+  .product {
+    display: grid;
+    gap: var(--s-6);
+    padding-bottom: var(--section);
+  }
+  .art {
+    position: relative;
+    border-radius: 18px;
+    background: radial-gradient(110% 80% at 50% 20%, #FBF5EA 0%, var(--cream-2) 75%);
+    aspect-ratio: 1 / 1;
+    box-shadow: var(--shadow-2);
+    overflow: hidden;
+  }
+  .art :global(.cup-art) {
+    position: absolute;
+    inset: 4%;
+    width: 92%;
+    height: 92%;
+  }
+  .tape {
+    position: absolute;
+    z-index: 1;
+    top: 14px;
+    right: -18px;
+    width: 110px;
+    height: 28px;
+    background: rgb(243 230 207 / 0.85);
+    transform: rotate(35deg);
+    clip-path: polygon(3% 0, 97% 8%, 100% 92%, 0 100%);
+    box-shadow: 0 1px 2px rgb(59 36 22 / 0.18);
+  }
+  .art-note {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    font-size: 1.05rem;
+    color: var(--cocoa-2);
+    transform: rotate(-2deg);
+  }
+  .tag {
+    transform: rotate(-2deg);
+    transform-origin: left;
+  }
+  .info h1 {
+    font-size: clamp(2.8rem, 2rem + 4vw, 5rem);
+  }
+  .dip-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--sw);
+  }
+  .price-line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+  .price {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 2.3rem;
+  }
+  .unit {
+    color: var(--cocoa-2);
+    font-size: var(--t-small);
+  }
+  .buy {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+  }
+  .add {
+    min-height: 56px;
+  }
+  .order-now {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    min-height: var(--tap);
+    font-weight: 600;
+  }
+  .cutoff {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    color: var(--cocoa-2);
+    font-size: 0.95rem;
+  }
+  .cutoff :global(svg) {
+    color: var(--velvet);
+    margin-top: 2px;
+  }
+  .notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .notes li {
+    padding: 6px 12px;
+    border-radius: var(--r-pill);
+    background: var(--cream-2);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+  .specs {
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+  .specs div {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .specs dt {
+    color: var(--cocoa-2);
+    font-size: 0.92rem;
+  }
+  .specs dd {
+    font-weight: 600;
+  }
+  .dip-card {
+    padding: 18px 20px;
+    border-radius: var(--r-3);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    display: grid;
+    gap: 6px;
+  }
+  .dip-card h2 {
+    font-size: 1.7rem;
+  }
+  .dip-card p:last-child {
+    color: var(--cocoa-2);
+  }
+  .also {
+    padding-bottom: var(--section);
+  }
+  .also h2 {
+    margin-bottom: var(--s-5);
+    font-size: clamp(1.8rem, 1.3rem + 2vw, 2.6rem);
+  }
+  .also-grid {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 640px) {
+    .also-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (min-width: 900px) {
+    .product {
+      grid-template-columns: 1.05fr 1fr;
+      gap: var(--s-8);
+      align-items: start;
+      padding-top: var(--s-4);
+    }
+    .art {
+      position: sticky;
+      top: 100px;
+    }
+  }
+</style>

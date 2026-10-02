@@ -1,0 +1,117 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/site/PageHead.astro';
+import Ritual from '../components/sections/Ritual.astro';
+import { defaultFlavour } from '../content/facts';
+import { quickOrderHref } from '../lib/checkout';
+
+const steps = [
+  { n: '1', t: 'Break the seal', d: 'Pop the dome lid off and turn it over. That’s your dip bowl, already full.' },
+  { n: '2', t: 'Go in at an angle', d: 'Hold the cookie flat between thumb and finger, then push in at a slight tilt. Straight down works, but you get less dip on the edges.' },
+  { n: '3', t: 'Half, then all', d: 'First bite with the dip. Second bite plain, so you taste the cookie on its own. That is the whole point of two textures in one cup.' },
+  { n: '4', t: 'Reseal, or don’t', d: 'The lid clicks back on and keeps the rest fresh for the next day. This is the step most people skip.' },
+];
+const upgrades = [
+  { t: 'Chill the cookies', d: 'Twenty minutes in the fridge makes the minis snappier against a soft dip. Best with the Double Chocolate.' },
+  { t: 'Cross the streams', d: 'Buy two cups, swap the lids. Red velvet minis in the Nutella dip is the one people come back for.' },
+];
+---
+
+<Base title="How to dip · No Biggie" description="You are probably doing it right already. But there is a correct way, and it takes about four seconds to learn.">
+  <PageHead kicker="how to dip" title="You are probably doing it right already." lede="But there is a correct way, and it takes about four seconds to learn." />
+
+  <section class="wrap steps-wrap" aria-label="Four steps" data-bar-trigger>
+    <ol class="steps" role="list">
+      {
+        steps.map((s) => (
+          <li class="step">
+            <span class="n hand" aria-hidden="true">{s.n}</span>
+            <h2>{s.t}</h2>
+            <p>{s.d}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <Ritual />
+
+  <section class="section wrap upgrades" aria-labelledby="up-title">
+    <p class="kicker">two upgrades</p>
+    <h2 id="up-title">If you want to get clever about it.</h2>
+    <div class="up-grid">
+      {
+        upgrades.map((u) => (
+          <div class="up">
+            <h3>{u.t}</h3>
+            <p>{u.d}</p>
+          </div>
+        ))
+      }
+    </div>
+    <a class="btn" href={quickOrderHref(defaultFlavour)} data-order>Practise on a cup</a>
+  </section>
+</Base>
+
+<style>
+  .steps {
+    display: grid;
+    gap: 14px;
+  }
+  .step {
+    position: relative;
+    padding: 20px 20px 22px 64px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    box-shadow: var(--shadow-1);
+  }
+  .n {
+    position: absolute;
+    left: 20px;
+    top: 14px;
+    font-size: 2.4rem;
+    line-height: 1;
+  }
+  .step h2 {
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+  }
+  .step p {
+    color: var(--cocoa-2);
+  }
+  .upgrades {
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
+  }
+  .upgrades h2 {
+    max-width: 18ch;
+  }
+  .up-grid {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+  }
+  .up {
+    padding: 18px 20px;
+    border-left: 3px solid var(--velvet);
+    background: rgb(251 247 240 / 0.6);
+  }
+  .up h3 {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+  }
+  .up p {
+    color: var(--cocoa-2);
+  }
+  @media (min-width: 900px) {
+    .steps {
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .up-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

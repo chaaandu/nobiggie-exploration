@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/hero/Hero.astro';
+import FactStrip from '../components/sections/FactStrip.astro';
+import Ritual from '../components/sections/Ritual.astro';
+import PickYourCup from '../components/sections/PickYourCup.astro';
+import CaseFile from '../components/sections/CaseFile.astro';
+import Emergency from '../components/sections/Emergency.astro';
+import Occasions from '../components/sections/Occasions.astro';
+import LidSection from '../components/sections/LidSection.astro';
+import GroupCalc from '../components/sections/GroupCalc.astro';
+import B2B from '../components/sections/B2B.astro';
+import FinalCta from '../components/sections/FinalCta.astro';
+import { businessLd, productLd } from '../lib/schema';
+import { flavours } from '../content/facts';
+---
+
+<Base
+  title="No Biggie · Mini cookies with the dip sealed in the lid · Bangalore"
+  description="Mini New York-style cookies in a cup, with Nutella or white chocolate dip sealed in the dome lid. Pop the lid, dip, dunk, repeat. Made to order in Bangalore, sent out the same day."
+  italicHeadline
+  jsonLd={[businessLd(), ...flavours.map(productLd)]}
+>
+  <Hero />
+  <FactStrip />
+  <Ritual />
+  <PickYourCup />
+  <CaseFile />
+  <Emergency />
+  <Occasions />
+  <LidSection />
+  <GroupCalc />
+  <B2B />
+  <FinalCta />
+</Base>

@@ -1,0 +1,460 @@
+---
+import Icon from '../ui/Icon.astro';
+import CrimeTape from './CrimeTape.astro';
+import Poster from './Poster.astro';
+import { defaultFlavour, dips, flavours, flavourById, product } from '../../content/facts';
+import { quickOrderHref } from '../../lib/checkout';
+import { rupees } from '../../lib/format';
+
+const f = flavourById(defaultFlavour);
+const total = product.cookiesPerCup;
+---
+
+<section class="hero" data-hero data-flavour={f.id} data-total={total} aria-labelledby="hero-title" data-bar-trigger>
+  <div class="wrap hero-copy">
+    <h1 id="hero-title">Come for the cookies. <em>Stay for the dip.</em></h1>
+  </div>
+
+  <div class="stage" data-stage>
+    <!-- Everything cup-shaped lives in one centred square, so overlays line up at any width. -->
+    <div class="frame" data-frame>
+      <Poster flavour={f.id} />
+      <div class="stage-3d" data-stage-3d aria-hidden="true"></div>
+      <div class="stage-ui" data-stage-ui>
+        <!-- Real buttons over the cup, so the scene works by keyboard and screen reader. -->
+        <button class="lid-hit" data-act="pop" aria-describedby="scene-desc">
+          <span class="sr-only">Pop the lid</span>
+        </button>
+        <div class="cookie-hits" role="group" aria-label="Cookies" data-cookie-hits hidden></div>
+        <p class="note note-pop hand" data-note="pop" aria-hidden="true">
+          <svg viewBox="0 0 60 40" class="note-arrow"><path d="M56 34C42 32 26 24 14 8" /><path d="M24 9 13 7l-1 11" /></svg>
+          <span>pop the lid</span>
+        </p>
+        <p class="note note-take hand" data-note="take" aria-hidden="true" hidden>
+          <span>tap a cookie</span>
+          <svg viewBox="0 0 60 40" class="note-arrow"><path d="M4 8c14 2 30 10 42 24" /><path d="M34 33l12 0 0-12" /></svg>
+        </p>
+        <p class="counter hand num" data-counter aria-hidden="true" hidden><span data-left>{total}</span> left</p>
+      </div>
+    </div>
+    <CrimeTape />
+  </div>
+
+  <p id="scene-desc" class="sr-only" data-scene-desc>
+    A clear cup holding {total} mini {f.name} cookies, with a dome lid on top filled with {dips[f.dip].name.toLowerCase()} dip.
+    Pop the lid, then pick a cookie to dip it and take a bite.
+  </p>
+  <p class="sr-only" aria-live="polite" data-hero-live></p>
+
+  <div class="wrap controls">
+    <div class="pill" role="group" aria-label="Cup controls">
+      <div class="flavours" role="radiogroup" aria-label="Flavour">
+        {
+          flavours.map((fl) => (
+            <button
+              class="flav"
+              role="radio"
+              aria-checked={fl.id === f.id ? 'true' : 'false'}
+              tabindex={fl.id === f.id ? 0 : -1}
+              data-flavour-pick={fl.id}
+              style={`--sw:${fl.look.swatch}`}
+            >
+              <span class="sw" aria-hidden="true" />
+              <span class="flav-name">{fl.name}</span>
+            </button>
+          ))
+        }
+      </div>
+      <div class="tools">
+        <button class="tool" data-act="refill" title="Refill the cup">
+          <Icon name="refill" /><span class="tool-label">Refill</span>
+        </button>
+        <button class="tool" data-act="sound" aria-pressed="false" title="Sound">
+          <span class="when-off"><Icon name="mute" /></span><span class="when-on"><Icon name="sound" /></span><span class="tool-label">Sound</span>
+        </button>
+        <button class="tool" data-act="motion" aria-pressed="false" title="Reduce motion">
+          <Icon name="still" /><span class="tool-label">Less motion</span>
+        </button>
+        <button class="tool" data-act="solo" aria-pressed="false" title="Just the cookie">
+          <Icon name="eye" /><span class="tool-label">Just the cookie</span>
+        </button>
+        <button class="tool tool-rec" data-act="record" title="Record a dip">
+          <Icon name="record" /><span class="tool-label">Record</span>
+        </button>
+      </div>
+    </div>
+
+    <a class="btn hero-order" href={quickOrderHref(f.id)} data-order data-hero-order>
+      <span>Order this cup</span><span aria-hidden="true">&middot;</span><span class="price" data-hero-price>{rupees(f.price)}</span>
+    </a>
+  </div>
+  <button class="solo-exit btn btn-cocoa btn-sm" data-act="solo-exit" hidden>Show everything</button>
+</section>
+
+<script>
+  import '../../hero/controller';
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    padding-top: clamp(8px, 2vw, 24px);
+    padding-bottom: clamp(28px, 4vw, 48px);
+    isolation: isolate;
+  }
+  .hero-copy {
+    position: relative;
+    z-index: 0;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: var(--t-hero);
+    line-height: 0.96;
+    max-width: 13ch;
+    margin-inline: auto;
+  }
+  .hero h1 em {
+    display: block;
+    color: var(--velvet);
+    margin-top: 0.06em;
+  }
+
+  /* ---- stage ---- */
+  .stage {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1280px;
+    margin: clamp(-30px, -2vw, -8px) auto 0;
+    aspect-ratio: 1 / 1;
+    max-height: min(68svh, 640px);
+    touch-action: pan-y;
+  }
+  /* Square, centred, as tall as the stage. Composition (in % of the frame):
+     sealed cup centred, dome top ~10%, rim ~31%, base ~88%. Once open, the cup sits at
+     x 38% and the lid lands as a bowl around x 76%, y 80%. */
+  .frame {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 100%;
+    transform: translateX(-50%);
+  }
+  .stage-3d,
+  .stage-ui {
+    position: absolute;
+    inset: 0;
+  }
+  .stage-3d {
+    opacity: 0;
+    transition: opacity 420ms var(--ease-out);
+  }
+  .stage-3d[data-ready] {
+    opacity: 1;
+  }
+  .stage-ui {
+    pointer-events: none;
+  }
+  .stage-ui > * {
+    pointer-events: auto;
+  }
+  .lid-hit {
+    position: absolute;
+    left: 50%;
+    top: 6%;
+    width: 40%;
+    height: 30%;
+    transform: translateX(-50%);
+    border: 0;
+    background: transparent;
+    border-radius: 50% 50% 18px 18px;
+    touch-action: none;
+    cursor: grab;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lid-hit:focus-visible {
+    outline-offset: -2px;
+  }
+  .cookie-hits {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .cookie-hits :global(button) {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    margin: -24px 0 0 -24px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cookie-hits :global(button:focus-visible) {
+    outline: 3px solid var(--cocoa);
+    outline-offset: 0;
+    box-shadow: 0 0 0 6px rgb(246 239 227 / 0.8);
+  }
+  .note {
+    position: absolute;
+    display: flex;
+    align-items: flex-start;
+    gap: 2px;
+    color: var(--velvet);
+    font-size: clamp(1.2rem, 0.9rem + 1.2vw, 1.75rem);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .note-pop {
+    left: 66%;
+    top: 5%;
+    transform: rotate(-5deg);
+  }
+  .note-take {
+    right: 66%;
+    top: 30%;
+    transform: rotate(4deg);
+  }
+  .note-arrow {
+    width: clamp(36px, 8%, 56px);
+    height: auto;
+    aspect-ratio: 3 / 2;
+    flex: none;
+    margin-top: 0.4em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .counter {
+    position: absolute;
+    right: 2%;
+    top: 8%;
+    font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.4rem);
+    color: var(--cocoa);
+    transform: rotate(-5deg);
+  }
+  .counter span {
+    color: var(--velvet);
+  }
+
+  /* ---- controls ---- */
+  .controls {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-4);
+    margin-top: var(--s-2);
+  }
+  .pill {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 6px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: var(--shadow-2);
+    width: min(100%, 460px);
+  }
+  .flavours {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+  .flav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: var(--tap);
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 16px;
+    background: transparent;
+    color: var(--cocoa-2);
+    font-weight: 600;
+    font-size: 0.86rem;
+    line-height: 1.1;
+    text-align: left;
+    transition: background-color var(--d-2), color var(--d-2);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .flav:hover {
+    color: var(--cocoa);
+    background: rgb(59 36 22 / 0.05);
+  }
+  .flav[aria-checked='true'] {
+    background: var(--cocoa);
+    color: var(--cream);
+  }
+  .sw {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--sw);
+    box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.35), 0 0 0 1px rgb(59 36 22 / 0.15);
+  }
+  .tools {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px dashed var(--line-strong);
+    padding-top: 4px;
+  }
+  .tool {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-width: var(--tap);
+    min-height: 52px;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--cocoa);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tool:hover {
+    background: rgb(59 36 22 / 0.06);
+  }
+  .tool :global(svg) {
+    width: 21px;
+    height: 21px;
+  }
+  .tool-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--cocoa-2);
+    white-space: nowrap;
+  }
+  .tool[aria-pressed='true'] {
+    background: var(--cream-2);
+  }
+  .tool[aria-pressed='true'] .tool-label {
+    color: var(--cocoa);
+  }
+  .when-on,
+  .when-off {
+    display: contents;
+  }
+  .tool[aria-pressed='false'] .when-on,
+  .tool[aria-pressed='true'] .when-off {
+    display: none;
+  }
+  .tool-rec :global(svg) {
+    color: var(--velvet);
+  }
+
+  .hero-order {
+    width: min(100%, 460px);
+    min-height: 56px;
+    font-size: 1.05rem;
+  }
+
+  .solo-exit {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 70;
+  }
+
+  /* "Just the cookie": the scene, full screen, nothing else. */
+  :global(html[data-solo]) .hero .stage {
+    position: fixed;
+    inset: 0;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    aspect-ratio: auto;
+    z-index: 60;
+    background: var(--cream);
+  }
+  :global(html[data-solo]) .hero .note,
+  :global(html[data-solo]) .hero .counter {
+    display: none;
+  }
+  :global(html[data-solo]) .hero .frame {
+    width: min(100vw, 100svh);
+    height: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+  }
+  :global(html[data-solo]) body {
+    overflow: hidden;
+  }
+
+  @media (min-width: 640px) {
+    .stage {
+      aspect-ratio: 4 / 3;
+    }
+  }
+  @media (min-width: 900px) {
+    .hero h1 {
+      max-width: none;
+    }
+    /* The top of the frame sits under the headline on wide screens: keep notes below it. */
+    .note-pop {
+      top: 22%;
+      left: 68%;
+    }
+    .stage {
+      aspect-ratio: 21 / 10;
+      max-height: min(62svh, 600px);
+      margin-top: clamp(-90px, -5vw, -40px);
+    }
+    .controls {
+      flex-direction: row;
+      justify-content: center;
+      gap: var(--s-4);
+    }
+    .pill {
+      flex-direction: row;
+      align-items: center;
+      width: auto;
+      border-radius: var(--r-pill);
+    }
+    .flavours {
+      display: flex;
+    }
+    .flav {
+      padding: 4px 14px;
+      border-radius: var(--r-pill);
+      white-space: nowrap;
+    }
+    .tools {
+      border-top: 0;
+      border-left: 1px dashed var(--line-strong);
+      padding: 0 0 0 4px;
+      gap: 2px;
+    }
+    .tool {
+      min-height: var(--tap);
+      border-radius: var(--r-pill);
+      padding: 0 10px;
+    }
+    .tool-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+    .hero-order {
+      width: auto;
+      padding: 0 28px;
+    }
+  }
+</style>

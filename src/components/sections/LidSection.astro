@@ -1,0 +1,201 @@
+---
+/**
+ * "The lid is the best part" + "Why mini". A scroll-scrubbed exploded view: as you scroll,
+ * the lid, the dip, the cookies and the cup pull apart and the callouts arrive. Pure CSS
+ * scroll timelines (transform/opacity only); browsers without them get the exploded view
+ * standing still, which reads just as well.
+ */
+import { product } from '../../content/facts';
+import ExplodedLayer from './ExplodedLayer.astro';
+
+const callouts = [
+  { id: 'lid', k: 'Sealed dome lid', v: 'The dip travels sealed in the lid. No sachet, no side tub.' },
+  { id: 'reseal', k: 'Reseals', v: 'Clicks back on. Stop halfway, come back tomorrow.' },
+  { id: 'mini', k: 'Bite-sized build', v: 'Small enough to go under and come back out in one piece.' },
+  { id: 'days', k: `Best within ${product.bestWithinDays} days`, v: 'Made to order, so the clock starts the day it goes out.' },
+];
+---
+
+<section class="section lid" id="the-lid" aria-labelledby="lid-title">
+  <div class="wrap lid-head stack stack-4">
+    <p class="kicker">the main event</p>
+    <h2 id="lid-title">The lid is the best part.</h2>
+    <p class="lede">
+      Most cookies turn up with nothing to dip them in. Ours come with the dip sealed right into the lid, so it travels safely, sits
+      ready the moment you pop it open, and there&rsquo;s no second tub to wash.
+    </p>
+  </div>
+
+  <div class="x-track" data-exploded>
+    <div class="x-sticky">
+      <div class="x-stage" role="img" aria-label="An exploded view of the cup: the dome lid on top, the dip it holds, the mini cookies, and the cup.">
+        <ExplodedLayer part="lid" />
+        <ExplodedLayer part="dip" />
+        <ExplodedLayer part="cookies" />
+        <ExplodedLayer part="cup" />
+        {
+          callouts.map((c) => (
+            <div class={`callout co-${c.id}`} aria-hidden="true">
+              <span class="co-line" />
+              <p class="co-k">{c.k}</p>
+              <p class="co-v">{c.v}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- The same facts as text, for screen readers and anyone skimming. -->
+  <dl class="sr-only">
+    {
+      callouts.map((c) => (
+        <>
+          <dt>{c.k}</dt>
+          <dd>{c.v}</dd>
+        </>
+      ))
+    }
+  </dl>
+
+  <div class="wrap why">
+    <div class="stack stack-4">
+      <p class="kicker">why mini</p>
+      <h3>New York texture. Bite-sized build.</h3>
+      <p class="lede">
+        Full-size cookies snap at the worst moment and leave half of themselves in the jar. Ours are baked bite-sized, so the whole
+        thing goes under and comes back out intact, and a cup goes round a group without anyone breaking one in half.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .lid-head {
+    max-width: 44rem;
+  }
+  .x-track {
+    position: relative;
+    height: 230vh;
+    view-timeline-name: --explode;
+    view-timeline-axis: block;
+  }
+  .x-sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .x-stage {
+    position: relative;
+    width: min(92vw, 560px);
+    aspect-ratio: 3 / 4;
+    max-height: 86svh;
+  }
+  .x-stage :global(.xl) {
+    position: absolute;
+    left: 50%;
+    width: 64%;
+    translate: -50% 0;
+    animation-timeline: --explode;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-range: contain 0% contain 70%;
+  }
+  /* Assembled positions (the cup, standing) */
+  .x-stage :global(.xl-cup) { top: 44%; }
+  .x-stage :global(.xl-cookies) { top: 38%; }
+  .x-stage :global(.xl-dip) { top: 27%; }
+  .x-stage :global(.xl-lid) { top: 24%; }
+
+  .x-stage :global(.xl-lid) { animation-name: lid-out; }
+  .x-stage :global(.xl-dip) { animation-name: dip-out; }
+  .x-stage :global(.xl-cookies) { animation-name: cookies-out; }
+  @keyframes lid-out {
+    to { transform: translateY(-62%); }
+  }
+  @keyframes dip-out {
+    to { transform: translateY(-30%); }
+  }
+  @keyframes cookies-out {
+    to { transform: translateY(6%); }
+  }
+
+  .callout {
+    position: absolute;
+    width: 42%;
+    max-width: 200px;
+    opacity: 0;
+    animation: co-in linear both;
+    animation-timeline: --explode;
+  }
+  .co-k {
+    font-family: var(--f-display);
+    font-weight: 650;
+    font-size: clamp(1.05rem, 0.9rem + 0.8vw, 1.4rem);
+    line-height: 1.1;
+  }
+  .co-v {
+    font-size: 0.85rem;
+    color: var(--cocoa-2);
+    line-height: 1.35;
+    margin-top: 4px;
+  }
+  .co-line {
+    display: block;
+    width: 34px;
+    height: 2px;
+    background: var(--velvet);
+    margin-bottom: 8px;
+  }
+  .co-lid { top: 2%; left: 0; animation-range: contain 10% contain 30%; }
+  .co-reseal { top: 22%; right: -2%; text-align: right; animation-range: contain 22% contain 42%; }
+  .co-reseal .co-line { margin-left: auto; }
+  .co-mini { top: 58%; left: -2%; animation-range: contain 34% contain 54%; }
+  .co-days { bottom: 4%; right: -2%; text-align: right; animation-range: contain 46% contain 66%; }
+  .co-days .co-line { margin-left: auto; }
+  @keyframes co-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* No scroll timelines (or less motion): show the exploded view, standing still. */
+  @supports not (animation-timeline: view()) {
+    .x-track { height: auto; }
+    .x-sticky { position: static; height: auto; padding-block: var(--s-7); }
+    .x-stage :global(.xl-lid) { transform: translateY(-62%); }
+    .x-stage :global(.xl-dip) { transform: translateY(-30%); }
+    .x-stage :global(.xl-cookies) { transform: translateY(6%); }
+    .callout { opacity: 1; animation: none; }
+  }
+  :global(html[data-motion='reduced']) .x-track { height: auto; }
+  :global(html[data-motion='reduced']) .x-sticky { position: static; height: auto; padding-block: var(--s-7); }
+  :global(html[data-motion='reduced']) .x-stage :global(.xl) { animation: none; }
+  :global(html[data-motion='reduced']) .x-stage :global(.xl-lid) { transform: translateY(-62%); }
+  :global(html[data-motion='reduced']) .x-stage :global(.xl-dip) { transform: translateY(-30%); }
+  :global(html[data-motion='reduced']) .x-stage :global(.xl-cookies) { transform: translateY(6%); }
+  :global(html[data-motion='reduced']) .callout { opacity: 1; animation: none; }
+
+  .why {
+    margin-top: var(--s-7);
+  }
+  .why h3 {
+    font-size: var(--t-h2);
+    max-width: 16ch;
+  }
+  @media (min-width: 900px) {
+    .why .stack {
+      max-width: 44rem;
+      margin-left: auto;
+    }
+    .x-stage {
+      width: min(70vw, 620px);
+      aspect-ratio: 4 / 4;
+    }
+    .callout {
+      width: 34%;
+    }
+  }
+</style>

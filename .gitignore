@@ -1,0 +1,20 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# local env
+.env
+.env.production
+
+# OS / editor
+.DS_Store
+.idea/
+
+# QA output (screenshots, frame strips, lighthouse reports)
+qa/out/

@@ -1,0 +1,27 @@
+---
+/** One short loop per ritual step. Phase 4 fills these with sprites rendered from the 3D cup. */
+interface Props {
+  step: 'dip' | 'dunk' | 'repeat';
+  class?: string;
+}
+const { step, class: cls } = Astro.props;
+---
+
+<div class:list={['loop', cls]} data-loop={step}>
+  <span class="loop-ph hand">{step}</span>
+</div>
+
+<style>
+  .loop {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(120% 90% at 50% 18%, #FBF4E8 0%, var(--cream-2) 70%);
+  }
+  .loop-ph {
+    color: var(--cocoa-2);
+    opacity: 0.6;
+  }
+</style>

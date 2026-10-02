@@ -1,0 +1,134 @@
+/* Design tokens. Colours start from CLAUDE.md; every text pair is checked by qa/contrast.mjs. */
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/fraunces.woff2') format('woff2');
+  font-weight: 500 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/fraunces-italic.woff2') format('woff2');
+  font-weight: 500 800;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/fraunces-rupee.woff2') format('woff2');
+  font-weight: 500 800;
+  font-style: normal italic;
+  font-display: swap;
+  unicode-range: U+20B9;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/instrument-sans.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/instrument-sans-rupee.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range: U+20B9;
+}
+@font-face {
+  font-family: 'Gochi Hand';
+  src: url('/fonts/gochi-hand.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* Metric-matched fallbacks so the swap doesn't shove the layout around. */
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia'), local('Times New Roman'), local('Noto Serif');
+  size-adjust: 102%;
+  ascent-override: 96%;
+  descent-override: 25%;
+}
+@font-face {
+  font-family: 'Instrument Sans Fallback';
+  src: local('Arial'), local('Roboto'), local('Helvetica Neue');
+  size-adjust: 98%;
+  ascent-override: 100%;
+  descent-override: 25%;
+}
+
+:root {
+  /* colour */
+  --cream: #F6EFE3;
+  --cream-2: #EFE4D1;
+  --paper: #FBF7F0;
+  --cocoa: #3B2416;
+  --cocoa-2: #6B4E3B;
+  --ink: #1E120A;
+  --velvet: #B3262E;
+  --velvet-deep: #8E1B22;
+  --white-choc: #F3E6CF;
+  --nutella: #5A3420;
+  --tape: #F2C230; /* crime scene only */
+  --kraft: #D9C3A0;
+  --line: #E3D4BD;
+  --line-strong: #CDB89A;
+  --night: #22150D;
+  --night-2: #2E1D12;
+  --night-text: #F3E6CF;
+  --night-soft: #C9B49C;
+
+  /* type */
+  --f-display: 'Fraunces', 'Fraunces Fallback', Georgia, serif;
+  --f-ui: 'Instrument Sans', 'Instrument Sans Fallback', system-ui, sans-serif;
+  --f-hand: 'Gochi Hand', 'Bradley Hand', 'Segoe Print', cursive;
+
+  --t-hero: clamp(2.55rem, 1.1rem + 7.2vw, 6.4rem);
+  --t-h2: clamp(2rem, 1.2rem + 3.6vw, 3.9rem);
+  --t-h3: clamp(1.35rem, 1.05rem + 1.2vw, 1.95rem);
+  --t-lede: clamp(1.08rem, 1rem + 0.35vw, 1.25rem);
+  --t-body: 1.0625rem;
+  --t-small: 0.875rem;
+  --t-tiny: 0.78rem;
+  --t-hand: clamp(1.3rem, 1.1rem + 0.6vw, 1.6rem);
+
+  /* space (4px base) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --gutter: clamp(20px, 5vw, 48px);
+  --section: clamp(72px, 9vw + 32px, 152px);
+  --wrap: 1200px;
+
+  /* shape */
+  --r-1: 4px;
+  --r-2: 8px;
+  --r-3: 14px;
+  --r-pill: 999px;
+
+  /* light comes from above: shadows fall down and stay warm */
+  --shadow-1: 0 1px 1px rgb(59 36 22 / 0.08), 0 2px 5px -1px rgb(59 36 22 / 0.1);
+  --shadow-2: 0 1px 1px rgb(59 36 22 / 0.06), 0 6px 12px -4px rgb(59 36 22 / 0.16), 0 18px 32px -14px rgb(59 36 22 / 0.24);
+  --shadow-3: 0 2px 2px rgb(59 36 22 / 0.06), 0 14px 24px -8px rgb(59 36 22 / 0.2), 0 40px 60px -24px rgb(59 36 22 / 0.3);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --spring: linear(0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%, 0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1);
+  --d-1: 120ms;
+  --d-2: 200ms;
+  --d-3: 320ms;
+  --d-4: 480ms;
+
+  --tap: 44px;
+  --bar-h: 72px;
+  color-scheme: light;
+}

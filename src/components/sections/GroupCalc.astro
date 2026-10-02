@@ -1,0 +1,230 @@
+---
+/** "How many people?" → how many cups, split across the flavours. Big numbers nudge to B2B. */
+import { flavours, groups, ordering, product } from '../../content/facts';
+
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+const config = {
+  perPerson: groups.cookiesPerPerson,
+  perCup: product.cookiesPerCup,
+  b2bFrom: Math.min(groups.b2bFromCups, ordering.maxCupsPerOrder ?? Infinity),
+  flavours: flavours.map((f) => ({ id: f.id, name: f.name, price: f.price })),
+};
+const start = 12;
+---
+
+<section class:list={['section calc', { compact }]} id="group" aria-labelledby="calc-title" data-calc data-config={JSON.stringify(config)}>
+  <div class="wrap calc-grid">
+    <header class="stack stack-4">
+      <p class="kicker">feeding a crowd?</p>
+      <h2 id="calc-title">How many people?</h2>
+      <p class="lede">Slide to the headcount. We&rsquo;ll do the maths, and the arguing about flavours.</p>
+    </header>
+
+    <div class="calc-card">
+      <label class="people" for="calc-people">
+        <span class="people-n num" data-people-out>{start}</span>
+        <span class="people-k">people</span>
+      </label>
+      <input id="calc-people" class="slider" type="range" min="2" max="200" step="1" value={start} data-people aria-describedby="calc-result" />
+      <div class="ticks" aria-hidden="true"><span>2</span><span>50</span><span>100</span><span>150</span><span>200</span></div>
+
+      <div class="result" id="calc-result" aria-live="polite">
+        <p class="cups"><span data-cups>That&rsquo;s 3 cups.</span></p>
+        <p class="basis small muted">
+          About {config.perPerson} minis each, {config.perCup} to a cup.
+        </p>
+        <p class="mix" data-mix></p>
+      </div>
+
+      <div class="calc-actions" data-normal>
+        <button type="button" class="btn btn-block" data-add-mix>
+          <span data-add-label>Add them to the bag</span>
+        </button>
+      </div>
+      <div class="nudge" data-nudge hidden>
+        <p class="nudge-text"><strong>That&rsquo;s a B2B order.</strong> Let&rsquo;s do it properly: the right date, the right mix, no surprises.</p>
+        <a class="btn btn-cocoa btn-block" href="/b2b" data-b2b-link>Plan it with us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { add } from '../../lib/bag';
+  import { track } from '../../lib/track';
+  import type { FlavourId } from '../../content/facts';
+
+  type Config = { perPerson: number; perCup: number; b2bFrom: number; flavours: { id: FlavourId; name: string; price: number }[] };
+
+  document.querySelectorAll<HTMLElement>('[data-calc]').forEach((root) => {
+    const cfg = JSON.parse(root.dataset.config!) as Config;
+    const slider = root.querySelector<HTMLInputElement>('[data-people]')!;
+    const out = root.querySelector<HTMLElement>('[data-people-out]')!;
+    const cupsEl = root.querySelector<HTMLElement>('[data-cups]')!;
+    const mixEl = root.querySelector<HTMLElement>('[data-mix]')!;
+    const nudge = root.querySelector<HTMLElement>('[data-nudge]')!;
+    const normal = root.querySelector<HTMLElement>('[data-normal]')!;
+    const addBtn = root.querySelector<HTMLButtonElement>('[data-add-mix]')!;
+    const b2b = root.querySelector<HTMLAnchorElement>('[data-b2b-link]')!;
+    let mix: [FlavourId, number][] = [];
+
+    const update = () => {
+      const people = Number(slider.value);
+      const cups = Math.max(1, Math.ceil((people * cfg.perPerson) / cfg.perCup));
+      // Round-robin across the flavours, so a group gets the full argument.
+      const counts = new Map<FlavourId, number>();
+      for (let i = 0; i < cups; i++) {
+        const f = cfg.flavours[i % cfg.flavours.length].id;
+        counts.set(f, (counts.get(f) ?? 0) + 1);
+      }
+      mix = [...counts.entries()];
+      out.textContent = String(people);
+      slider.style.setProperty('--p', `${((people - 2) / 198) * 100}%`);
+      cupsEl.textContent = `That’s ${cups} cup${cups > 1 ? 's' : ''}.`;
+      mixEl.textContent = mix.map(([id, n]) => `${n} × ${cfg.flavours.find((f) => f.id === id)!.name}`).join(' · ');
+      const big = cups >= cfg.b2bFrom;
+      nudge.hidden = !big;
+      normal.hidden = big;
+      b2b.href = `/b2b?qty=${cups}&people=${people}#enquiry`;
+      addBtn.querySelector('[data-add-label]')!.textContent = `Add ${cups === 1 ? 'it' : `all ${cups}`} to the bag`;
+    };
+    slider.addEventListener('input', update);
+    update();
+
+    addBtn.addEventListener('click', () => {
+      mix.forEach(([id, n]) => add(id, n));
+      const total = mix.reduce((n, [, q]) => n + q, 0);
+      track('add_to_bag', { source: 'group_calc', qty: total });
+      window.dispatchEvent(new CustomEvent('nb:added', { detail: { button: addBtn, qty: total } }));
+    });
+  });
+</script>
+
+<style>
+  .calc-grid {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .calc-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: var(--shadow-2);
+    padding: 22px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .people {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .people-n {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(3.4rem, 2.5rem + 4vw, 5rem);
+    line-height: 1;
+  }
+  .people-k {
+    font-family: var(--f-hand);
+    font-size: 1.6rem;
+    color: var(--velvet);
+  }
+  .slider {
+    --p: 5%;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 44px;
+    background: transparent;
+    margin: 0;
+    cursor: pointer;
+  }
+  .slider::-webkit-slider-runnable-track {
+    height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--velvet) var(--p), var(--cream-2) var(--p));
+    box-shadow: inset 0 1px 2px rgb(59 36 22 / 0.2);
+  }
+  .slider::-moz-range-track {
+    height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--velvet) var(--p), var(--cream-2) var(--p));
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 38px;
+    height: 38px;
+    margin-top: -14px;
+    border-radius: 50%;
+    border: 0;
+    background: radial-gradient(circle at 34% 36%, #2A170E 0 9%, transparent 10%), radial-gradient(circle at 64% 58%, #2A170E 0 8%, transparent 9%),
+      radial-gradient(circle at 40% 70%, #2A170E 0 6%, transparent 7%), radial-gradient(circle at 50% 45%, #CF9A62, #A86F3C);
+    box-shadow: 0 3px 6px rgb(59 36 22 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.12);
+  }
+  .slider::-moz-range-thumb {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 0;
+    background: radial-gradient(circle at 34% 36%, #2A170E 0 9%, transparent 10%), radial-gradient(circle at 64% 58%, #2A170E 0 8%, transparent 9%),
+      radial-gradient(circle at 50% 45%, #CF9A62, #A86F3C);
+    box-shadow: 0 3px 6px rgb(59 36 22 / 0.35);
+  }
+  .slider:focus-visible {
+    outline: none;
+  }
+  .slider:focus-visible::-webkit-slider-thumb {
+    outline: 3px solid var(--cocoa);
+    outline-offset: 3px;
+  }
+  .slider:focus-visible::-moz-range-thumb {
+    outline: 3px solid var(--cocoa);
+    outline-offset: 3px;
+  }
+  .ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--t-tiny);
+    color: var(--cocoa-2);
+    margin-top: -8px;
+    padding-inline: 4px;
+  }
+  .result {
+    border-top: 1.5px dashed var(--line-strong);
+    padding-top: 14px;
+  }
+  .cups {
+    font-family: var(--f-display);
+    font-weight: 650;
+    font-size: clamp(1.8rem, 1.4rem + 1.6vw, 2.5rem);
+    line-height: 1.05;
+  }
+  .mix {
+    margin-top: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .nudge {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    border-radius: var(--r-3);
+    background: var(--cream-2);
+  }
+  @media (min-width: 900px) {
+    .calc-grid {
+      grid-template-columns: 1fr 1.1fr;
+      align-items: center;
+      gap: var(--s-8);
+    }
+    .calc-card {
+      padding: 28px;
+    }
+  }
+</style>

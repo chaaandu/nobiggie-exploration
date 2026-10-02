@@ -1,0 +1,61 @@
+---
+/**
+ * Placeholder wordmark until the real logo file arrives.
+ * To swap: drop the vector into public/brand/logo.svg and replace the markup below with
+ * <img src="/brand/logo.svg" alt="No Biggie" width="…" height="…" />.
+ */
+interface Props {
+  class?: string;
+  tagline?: boolean;
+}
+const { class: cls, tagline = false } = Astro.props;
+---
+
+<span class:list={['logo', cls]}>
+  <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true">
+    <path
+      d="M24 4.5c10.8 0 19.5 8.7 19.5 19.5S34.8 43.5 24 43.5 4.5 34.8 4.5 24c0-1.6.2-3.1.5-4.6 1.9.9 4.2.6 5.7-1 1.5-1.5 1.9-3.7 1.1-5.6 1.9.4 4-.1 5.4-1.6 1.5-1.5 2-3.6 1.6-5.5 1.7-.8 3.4-1.2 5.2-1.2z"
+      fill="var(--nutella)"></path>
+    <circle cx="19" cy="20" r="3.1" fill="var(--white-choc)"></circle>
+    <circle cx="30" cy="17.5" r="2.3" fill="var(--white-choc)"></circle>
+    <circle cx="28" cy="30" r="3.4" fill="var(--white-choc)"></circle>
+    <circle cx="17" cy="32" r="2.1" fill="var(--white-choc)"></circle>
+    <circle cx="36.5" cy="27" r="1.8" fill="var(--white-choc)"></circle>
+  </svg>
+  <span class="logo-text">
+    <span class="logo-name">No Biggie</span>
+    {tagline && <span class="logo-tag">Dip. Dunk. Repeat.</span>}
+  </span>
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
+  }
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    transform: rotate(-8deg);
+  }
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .logo-name {
+    font-family: var(--f-display);
+    font-weight: 760;
+    font-size: 1.32rem;
+    letter-spacing: -0.01em;
+    color: var(--cocoa);
+  }
+  .logo-tag {
+    font-family: var(--f-hand);
+    font-size: 0.95rem;
+    color: var(--velvet);
+  }
+</style>

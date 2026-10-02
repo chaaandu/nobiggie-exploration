@@ -1,0 +1,13 @@
+---
+/**
+ * Marks a missing business fact. Dev builds show a striped chip with the note so the gap is
+ * impossible to miss; production renders the slot (honest generic copy) or nothing.
+ */
+interface Props {
+  note: string;
+}
+const { note } = Astro.props;
+const dev = import.meta.env.DEV;
+---
+
+{dev ? <span class="todo-chip" title={note}>TODO: {note}</span> : <slot />}

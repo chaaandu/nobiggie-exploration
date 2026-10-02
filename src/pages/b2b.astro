@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import B2B from '../components/sections/B2B.astro';
+import GroupCalc from '../components/sections/GroupCalc.astro';
+---
+
+<Base
+  title="B2B & bulk orders · No Biggie"
+  description="Cafés and restaurants, corporate gifting, offices, events and weddings. Bulk orders of No Biggie cups in Bangalore. Tell us what you need on WhatsApp."
+>
+  <div data-bar-trigger>
+    <B2B collapsed={false} headingLevel="h1" />
+  </div>
+  <GroupCalc />
+</Base>

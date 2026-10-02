@@ -1,0 +1,59 @@
+---
+import { flavours } from '../../content/facts';
+import { rupees } from '../../lib/format';
+
+const all = flavours.reduce((n, f) => n + f.price, 0);
+---
+
+<section class="section final" aria-labelledby="final-title">
+  <div class="wrap final-card">
+    <h2 id="final-title">Dip. Dunk. <em>Repeat.</em></h2>
+    <p class="lede">Three flavours, made the day they go out. Pick one, or take all three and settle the argument properly.</p>
+    <div class="final-actions">
+      <button type="button" class="btn" data-add-all data-add-label-target>
+        <span data-add-label>Settle it: one of each &middot; <span class="num">{rupees(all)}</span></span>
+      </button>
+      <a class="btn btn-ghost" href="/shop">Shop all flavours</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { add } from '../../lib/bag';
+  import { flavours } from '../../content/facts';
+  import { track } from '../../lib/track';
+
+  document.querySelectorAll<HTMLButtonElement>('[data-add-all]').forEach((b) =>
+    b.addEventListener('click', () => {
+      flavours.forEach((f) => add(f.id, 1));
+      track('add_to_bag', { source: 'settle_it', qty: flavours.length });
+      window.dispatchEvent(new CustomEvent('nb:added', { detail: { button: b, qty: flavours.length } }));
+    }),
+  );
+</script>
+
+<style>
+  .final-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--s-5);
+  }
+  .final h2 {
+    font-size: clamp(3rem, 2rem + 6vw, 7rem);
+    line-height: 0.92;
+  }
+  .final h2 em {
+    color: var(--velvet);
+  }
+  .final .lede {
+    max-width: 40ch;
+  }
+  .final-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+</style>

@@ -1,0 +1,82 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/site/PageHead.astro';
+import CupArt from '../components/shop/CupArt.astro';
+import { defaultFlavour } from '../content/facts';
+---
+
+<Base title="Our story · No Biggie" description="It started as a fix for a bad snack. So we made the cookie smaller and put the dip right in the lid.">
+  <PageHead kicker="our story" title="It started as a fix for a bad snack." />
+  <article class="wrap story" data-bar-trigger>
+    <div class="body">
+      <p>
+        Every cookie sold in a bag has the same problem. It is too big to dip, too dry to eat on its own, and it arrives without the one
+        thing that would make it better: something to dunk it in.
+      </p>
+      <p class="pull">So we made the cookie smaller and put the dip right in the lid.</p>
+      <p>
+        The format came first. A clear cup so you can see exactly what you are getting. A dome on top holding the dip, sealed, so it
+        travels without a second container. And cookies baked at a size that actually survives being pushed into something thick.
+      </p>
+      <p>
+        Then came the dips. Red velvet needed white chocolate, because the cocoa in a red velvet is mild and wants the sweetness beside
+        it. Both chocolate cups landed on Nutella. Hazelnut is the one thing that stands up to that much cocoa without competing with
+        it, and it needs no explaining to anybody.
+      </p>
+      <p>
+        Everything is baked to order and goes out the same day. That is the part we are least willing to compromise on, and the reason
+        we cannot ship nationwide yet.
+      </p>
+      <p class="sign hand">— No Biggie, Bangalore</p>
+    </div>
+    <div class="side" aria-hidden="true">
+      <div class="side-art"><CupArt flavour={defaultFlavour} /></div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .story {
+    display: grid;
+    gap: var(--s-7);
+    padding-bottom: var(--section);
+  }
+  .body {
+    display: grid;
+    gap: 1.1em;
+    font-size: 1.12rem;
+    line-height: 1.65;
+    max-width: 38rem;
+  }
+  .pull {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.4rem);
+    line-height: 1.15;
+    color: var(--velvet);
+    margin-block: 0.4em;
+  }
+  .sign {
+    margin-top: 0.6em;
+  }
+  .side-art {
+    aspect-ratio: 1 / 1;
+    max-width: 380px;
+    margin-inline: auto;
+    border-radius: 18px;
+    background: radial-gradient(110% 80% at 50% 20%, #FBF5EA 0%, var(--cream-2) 75%);
+    box-shadow: var(--shadow-2);
+    transform: rotate(2deg);
+  }
+  @media (min-width: 900px) {
+    .story {
+      grid-template-columns: 1.3fr 1fr;
+      align-items: start;
+    }
+    .side {
+      position: sticky;
+      top: 120px;
+    }
+  }
+</style>

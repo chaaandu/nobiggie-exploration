@@ -1,0 +1,233 @@
+---
+/**
+ * Dip / Dunk / Repeat. Swipeable cards on phones; on desktop the loop stays put while the
+ * three words scroll past it, and whichever word is in view drives the loop.
+ */
+import RitualLoop from './RitualLoop.astro';
+
+const steps = [
+  {
+    id: 'dip',
+    word: 'Dip.',
+    text: 'Pop the lid. Take a mini cookie between two fingers and swipe it through the dip.',
+  },
+  {
+    id: 'dunk',
+    word: 'Dunk.',
+    text: 'The cookies are small on purpose. Each one picks up just the right amount of dip and comes back out in one piece.',
+  },
+  {
+    id: 'repeat',
+    word: 'Repeat.',
+    text: 'Each one is a single bite. The lid reseals, so you can stop halfway, pass the cup round, or come back to it tomorrow.',
+  },
+] as const;
+---
+
+<section class="section ritual" id="ritual" aria-labelledby="ritual-title" data-ritual data-active="dip">
+  <div class="wrap">
+    <header class="ritual-head stack stack-4">
+      <p class="kicker">
+        the ritual
+        <svg viewBox="0 0 26 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 4c6 1 13 4 20 11" /><path d="M14 15.5 22 15l-.5-8" /></svg>
+      </p>
+      <h2 id="ritual-title">Three words. That&rsquo;s the whole instruction manual.</h2>
+    </header>
+
+    <div class="ritual-body">
+      <div class="ritual-screen" aria-hidden="true">
+        {steps.map((s) => <RitualLoop step={s.id} class="screen-loop" />)}
+      </div>
+
+      <ol class="ritual-steps" role="list" data-ritual-track>
+        {
+          steps.map((s, i) => (
+            <li class="step" data-step={s.id}>
+              <div class="step-loop" aria-hidden="true">
+                <RitualLoop step={s.id} />
+              </div>
+              <p class="step-n hand">{i + 1}</p>
+              <h3 class="step-word">{s.word}</h3>
+              <p class="step-text">{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <div class="dots" aria-hidden="true">
+        {steps.map((s) => <span data-dot={s.id} />)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const section = document.querySelector<HTMLElement>('[data-ritual]');
+  if (section) {
+    const steps = [...section.querySelectorAll<HTMLElement>('[data-step]')];
+    // Whichever card/word is most in view becomes the active step (drives the loop + dots).
+    const io = new IntersectionObserver(
+      (entries) => {
+        const best = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (best) section.dataset.active = (best.target as HTMLElement).dataset.step;
+      },
+      { threshold: [0.4, 0.6, 0.8] },
+    );
+    steps.forEach((s) => io.observe(s));
+  }
+</script>
+
+<style>
+  .ritual-head {
+    max-width: 40rem;
+  }
+  .ritual-body {
+    margin-top: var(--s-7);
+  }
+  .ritual-screen {
+    display: none;
+  }
+  .ritual-steps {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(84%, 340px);
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    padding: 6px var(--gutter) 18px;
+    margin-inline: calc(var(--gutter) * -1);
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .ritual-steps::-webkit-scrollbar {
+    display: none;
+  }
+  .step {
+    scroll-snap-align: start;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    box-shadow: var(--shadow-2);
+    padding: 12px 12px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+  .step-loop {
+    aspect-ratio: 1 / 0.86;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--cream-2);
+    margin-bottom: 6px;
+  }
+  .step-n {
+    position: absolute;
+    top: 18px;
+    left: 22px;
+    font-size: 1.6rem;
+    color: var(--velvet);
+  }
+  .step-word {
+    font-size: clamp(2.6rem, 2rem + 3vw, 4.6rem);
+    font-style: italic;
+    padding-inline: 8px;
+  }
+  .step-text {
+    padding-inline: 8px;
+    color: var(--cocoa-2);
+    text-wrap: pretty;
+  }
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+  .dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--line-strong);
+    transition: background-color var(--d-2), transform var(--d-2);
+  }
+  .ritual[data-active='dip'] [data-dot='dip'],
+  .ritual[data-active='dunk'] [data-dot='dunk'],
+  .ritual[data-active='repeat'] [data-dot='repeat'] {
+    background: var(--velvet);
+    transform: scale(1.25);
+  }
+
+  /* Desktop: the loop holds still on the left while the words scroll by on the right. */
+  @media (min-width: 900px) {
+    .ritual-body {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: var(--s-8);
+      align-items: start;
+    }
+    .ritual-screen {
+      display: block;
+      position: sticky;
+      top: 110px;
+      aspect-ratio: 1 / 0.92;
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--cream-2);
+      box-shadow: var(--shadow-3);
+    }
+    .ritual-screen :global(.screen-loop) {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity var(--d-3);
+    }
+    .ritual[data-active='dip'] .ritual-screen :global([data-loop='dip']),
+    .ritual[data-active='dunk'] .ritual-screen :global([data-loop='dunk']),
+    .ritual[data-active='repeat'] .ritual-screen :global([data-loop='repeat']) {
+      opacity: 1;
+    }
+    .ritual-steps {
+      grid-auto-flow: row;
+      grid-auto-columns: auto;
+      overflow: visible;
+      margin: 0;
+      padding: 0;
+      gap: 0;
+    }
+    .step {
+      background: none;
+      border: 0;
+      box-shadow: none;
+      padding: 18vh 0;
+      min-height: 62vh;
+      justify-content: center;
+      opacity: 0.28;
+      transition: opacity var(--d-3);
+    }
+    .step:first-child {
+      padding-top: 8vh;
+    }
+    .ritual[data-active='dip'] [data-step='dip'],
+    .ritual[data-active='dunk'] [data-step='dunk'],
+    .ritual[data-active='repeat'] [data-step='repeat'] {
+      opacity: 1;
+    }
+    .step-loop,
+    .dots {
+      display: none;
+    }
+    .step-n {
+      position: static;
+      font-size: 2rem;
+    }
+    .step-word {
+      padding: 0;
+      font-size: clamp(4rem, 2rem + 4vw, 6.5rem);
+    }
+    .step-text {
+      padding: 0;
+      font-size: var(--t-lede);
+      max-width: 30ch;
+    }
+  }
+</style>

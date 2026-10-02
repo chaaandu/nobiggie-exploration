@@ -1,0 +1,81 @@
+---
+/**
+ * The picture of a cup. Until real product photos exist this is a render of our own 3D cup
+ * (public/renders, made by `npm run render`); see docs/shotlist.md for the photos to shoot.
+ */
+import { flavourById, dips, type FlavourId } from '../../content/facts';
+import { renders } from '../../content/renders';
+
+interface Props {
+  flavour: FlavourId;
+  /** Rendered pixel width of the slot, for sizes=… */
+  sizes?: string;
+  eager?: boolean;
+  class?: string;
+}
+const { flavour, sizes = '(min-width: 900px) 360px, 45vw', eager = false, class: cls } = Astro.props;
+const f = flavourById(flavour);
+const art = renders.card[flavour];
+const alt = `A clear cup of ${f.name} mini cookies, dome lid filled with ${dips[f.dip].name.toLowerCase()} dip`;
+---
+
+{
+  art ? (
+    <picture class:list={['cup-art', cls]}>
+      <source type="image/avif" srcset={art.avif} sizes={sizes} />
+      <img
+        src={art.fallback}
+        srcset={art.webp}
+        sizes={sizes}
+        width={art.width}
+        height={art.height}
+        alt={alt}
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+    </picture>
+  ) : (
+    <div class:list={['cup-art cup-art-empty', cls]} role="img" aria-label={alt} style={`--c:${f.look.cookie};--d:${dips[f.dip].colour}`}>
+      <span class="ph-dome" />
+      <span class="ph-cup" />
+    </div>
+  )
+}
+
+<style>
+  .cup-art {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .cup-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .cup-art-empty {
+    position: relative;
+    min-height: 120px;
+  }
+  .ph-dome,
+  .ph-cup {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .ph-dome {
+    top: 14%;
+    width: 46%;
+    aspect-ratio: 2 / 1;
+    border-radius: 999px 999px 6px 6px;
+    background: var(--d);
+    box-shadow: inset 6px 6px 0 rgb(255 255 255 / 0.25);
+  }
+  .ph-cup {
+    top: 38%;
+    width: 50%;
+    height: 50%;
+    clip-path: polygon(0 0, 100% 0, 86% 100%, 14% 100%);
+    background: radial-gradient(circle at 30% 30%, var(--c) 0 22%, transparent 23%) 0 0 / 34% 34%, color-mix(in srgb, var(--c) 70%, white);
+  }
+</style>

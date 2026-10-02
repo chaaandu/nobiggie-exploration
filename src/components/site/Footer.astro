@@ -1,0 +1,144 @@
+---
+import Icon from '../ui/Icon.astro';
+import Todo from './Todo.astro';
+import { brand, flavours } from '../../content/facts';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-foot on-dark">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <p class="foot-tag display">Dip. Dunk.<br /><em>Repeat.</em></p>
+      <p class="foot-line">Mini cookies with the dip sealed in the lid. Made to order in {brand.city}, sent out the same day.</p>
+    </div>
+
+    <nav class="foot-col" aria-labelledby="f-shop">
+      <h2 id="f-shop">Shop</h2>
+      <ul role="list">
+        {flavours.map((f) => <li><a href={`/shop/${f.id}`}>{f.name}</a></li>)}
+        <li><a href="/shop">All flavours</a></li>
+        <li><a href="/b2b">B2B &amp; bulk</a></li>
+      </ul>
+    </nav>
+
+    <nav class="foot-col" aria-labelledby="f-learn">
+      <h2 id="f-learn">Learn</h2>
+      <ul role="list">
+        <li><a href="/how-to-dip">How to dip</a></li>
+        <li><a href="/story">Our story</a></li>
+        <li><a href="/contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="foot-col">
+      <h2>Say hello</h2>
+      <ul role="list" class="foot-social">
+        <li><a href={brand.instagram.url} rel="me noopener" target="_blank"><Icon name="instagram" size={20} />{brand.instagram.handle}</a></li>
+        <li><a href={`https://wa.me/${brand.phone.whatsapp}`} rel="noopener" target="_blank"><Icon name="whatsapp" size={20} />WhatsApp</a></li>
+        <li><a href={`tel:${brand.phone.tel}`}><Icon name="phone" size={20} />{brand.phone.display}</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="wrap foot-base">
+    <p>&copy; {year} {brand.legalName ?? brand.name} &middot; {brand.city}</p>
+    <p>
+      {brand.fssai ? <>FSSAI Lic. No. {brand.fssai}</> : <Todo note="FSSAI licence number" />}
+    </p>
+    <nav aria-label="Policies" class="foot-policies">
+      <a href="/policies/shipping">Shipping</a>
+      <a href="/policies/refunds">Refunds</a>
+      <a href="/policies/privacy">Privacy</a>
+      <a href="/policies/terms">Terms</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-foot {
+    background: var(--cocoa);
+    color: var(--white-choc);
+    padding: var(--s-9) 0 calc(var(--s-6) + var(--bar-h));
+    position: relative;
+  }
+  .foot-grid {
+    display: grid;
+    gap: var(--s-7) var(--s-6);
+    grid-template-columns: 1fr 1fr;
+  }
+  .foot-brand {
+    grid-column: 1 / -1;
+  }
+  .foot-tag {
+    font-size: clamp(3rem, 2rem + 6vw, 6.5rem);
+    line-height: 0.92;
+    color: var(--cream);
+  }
+  .foot-tag em {
+    color: #E7B7A0;
+  }
+  .foot-line {
+    margin-top: var(--s-5);
+    color: var(--night-soft);
+    max-width: 38ch;
+  }
+  .foot-col h2 {
+    font-family: var(--f-hand);
+    font-weight: 400;
+    font-size: 1.4rem;
+    color: #E7B7A0;
+    margin-bottom: var(--s-3);
+    letter-spacing: 0;
+  }
+  .foot-col ul {
+    display: flex;
+    flex-direction: column;
+  }
+  .foot-col a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap);
+    color: var(--cream);
+    text-decoration: none;
+  }
+  .foot-col a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .foot-base {
+    margin-top: var(--s-8);
+    padding-top: var(--s-5);
+    border-top: 1px solid rgb(243 230 207 / 0.16);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3) var(--s-6);
+    align-items: center;
+    font-size: var(--t-small);
+    color: var(--night-soft);
+  }
+  .foot-policies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--s-4);
+    margin-left: auto;
+  }
+  .foot-policies a {
+    color: var(--night-soft);
+    min-height: var(--tap);
+    display: inline-flex;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .foot-grid {
+      grid-template-columns: 2fr 1fr 1fr 1.2fr;
+    }
+    .foot-brand {
+      grid-column: auto;
+    }
+    .site-foot {
+      padding-bottom: var(--s-6);
+    }
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/site/PageHead.astro';
+import CupCard from '../../components/shop/CupCard.astro';
+import GroupCalc from '../../components/sections/GroupCalc.astro';
+import ShipNote from '../../components/shop/ShipNote.astro';
+import { flavours } from '../../content/facts';
+import { productLd } from '../../lib/schema';
+---
+
+<Base
+  title="Shop · No Biggie · Three cups, one format"
+  description="Choco Chunk, Red Velvet and Double Chocolate: a full cup of mini New York-style cookies with the dip sealed into the lid. Made to order in Bangalore."
+  jsonLd={flavours.map(productLd)}
+>
+  <PageHead
+    kicker="the shop"
+    title="The whole range."
+    lede="Three cups, one format. Every one is a full cup of mini cookies with its own dip sealed into the lid."
+  />
+  <section class="wrap shop-grid" aria-label="Flavours" data-bar-trigger>
+    {flavours.map((f) => <CupCard flavour={f} headingLevel="h2" />)}
+  </section>
+  <div class="wrap">
+    <ShipNote />
+  </div>
+  <GroupCalc />
+</Base>
+
+<style>
+  .shop-grid {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 640px) {
+    .shop-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1000px) {
+    .shop-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+  }
+</style>

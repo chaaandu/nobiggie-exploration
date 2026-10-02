@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/site/PageHead.astro';
+import Todo from '../../components/site/Todo.astro';
+import { brand, policies } from '../../content/facts';
+
+const pages = {
+  shipping: { title: 'Shipping & delivery', text: policies.shipping },
+  refunds: { title: 'Refunds & cancellations', text: policies.refunds },
+  privacy: { title: 'Privacy', text: policies.privacy },
+  terms: { title: 'Terms', text: policies.terms },
+} as const;
+
+export function getStaticPaths() {
+  return ['shipping', 'refunds', 'privacy', 'terms'].map((slug) => ({ params: { slug } }));
+}
+const { slug } = Astro.params as { slug: keyof typeof pages };
+const page = pages[slug];
+---
+
+<Base title={`${page.title} · No Biggie`} description={`${page.title} for No Biggie, Bangalore.`}>
+  <PageHead kicker="the small print" title={page.title} />
+  <article class="wrap policy" data-bar-trigger>
+    {
+      page.text ? (
+        <div class="body" set:html={page.text} />
+      ) : (
+        <Todo note={`${page.title} policy text (facts.ts → policies)`}>
+          <p class="lede">
+            We&rsquo;re writing this up properly. Until it&rsquo;s here, message us on WhatsApp ({brand.phone.display}) and we&rsquo;ll
+            answer whatever you need to know.
+          </p>
+        </Todo>
+      )
+    }
+  </article>
+</Base>
+
+<style>
+  .policy {
+    padding-bottom: var(--section);
+    max-width: 46rem;
+  }
+  .body :global(p) {
+    margin-bottom: 1em;
+  }
+</style>
