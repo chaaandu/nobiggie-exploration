@@ -146,7 +146,7 @@ export class Director {
   private envNight: Texture | null = null;
   private key = new DirectionalLight('#fff0dc', 1.05);
   /** Back light: puts the gloss on the dip and the chocolate, rims the cookies. */
-  private back = new DirectionalLight('#fff6ea', 1.5);
+  private back = new DirectionalLight('#fff6ea', 1.1);
 
   /** Set by the host: asks for frames (demand rendering). */
   wake: () => void = () => {};
@@ -168,6 +168,7 @@ export class Director {
   private aDip!: InstancedBufferAttribute;
   private aBite!: InstancedBufferAttribute;
   private lid = new Group();
+  private cupGroup = new Group();
   private lidShell: Mesh[] = [];
   private dipMass!: Mesh;
   private dipSurface!: Mesh;
@@ -230,7 +231,7 @@ export class Director {
 
     this.key.position.set(-9, 24, 16);
     this.key.target.position.set(3, 3, 0);
-    this.back.position.set(6, 16, -26);
+    this.back.position.set(6, 34, -18); // high enough that its mirror image on the flat dip misses the camera
     this.back.target.position.set(6, 2, 2);
     this.root.add(this.key, this.key.target, this.back, this.back.target);
 
@@ -263,7 +264,7 @@ export class Director {
     cupBack.renderOrder = 1;
     const cupFront = new Mesh(cupGeo, plasticMaterial(FrontSide));
     cupFront.renderOrder = 3;
-    const cup = new Group();
+    const cup = this.cupGroup;
     cup.position.set(LAYOUT.cup.x, 0, LAYOUT.cup.z);
     cup.add(cupBack, cupFront);
     this.root.add(cup);
@@ -656,11 +657,6 @@ export class Director {
     this.key.color.set(on ? '#ffc48a' : '#fff0dc');
     this.key.intensity = on ? 1.6 : 1.05;
     this.key.position.set(on ? -14 : -9, on ? 20 : 24, on ? 8 : 16);
-    const t = this.table?.material as { uniforms?: Record<string, { value: unknown }> } | undefined;
-    if (t?.uniforms) {
-      (t.uniforms.uCream.value as Color).set(on ? '#5a3a24' : '#F6EFE3');
-      (t.uniforms.uWarm.value as Color).set(on ? '#22150D' : '#E9D9BF');
-    }
   }
 
   private ripple(world: Vector3, amp: number, t: number) {
@@ -1063,6 +1059,45 @@ export class Director {
         const v = s.position.clone().project(this.camera);
         return { id: s.index, x: (v.x + 1) / 2, y: (1 - v.y) / 2 };
       });
+  }
+
+  /**
+   * Studio mode, for the still renders (poster, 2D layers, cards, exploded view): show only
+   * some parts, choose a camera, or pose a single cookie for a sprite.
+   */
+  studio(o: {
+    parts?: Partial<Record<'table' | 'cup' | 'cookies' | 'lid' | 'crumbs' | 'shadows', boolean>>;
+    camera?: 'hero' | 'card' | 'cookie';
+    cookie?: 'plain' | 'dipped' | 'bitten';
+    lidOnCupHidden?: boolean;
+  }) {
+    const p = { table: true, cup: true, cookies: true, lid: true, crumbs: true, shadows: true, ...o.parts };
+    this.table.visible = p.table;
+    this.cupGroup.visible = p.cup;
+    this.cookies.visible = p.cookies;
+    this.lid.visible = p.lid;
+    this.crumbs.mesh.visible = p.crumbs;
+    [this.cupShadow, this.bowlShadow, this.lidShadow, ...this.shadowPool].forEach((m) => (m.visible = p.shadows));
+    if (o.camera === 'card') {
+      this.camera.position.set(0.4, 15.5, 40);
+      this.camera.lookAt(0, 7.2, 0);
+    } else if (o.camera === 'cookie') {
+      this.camera.position.set(0, 5, 11);
+      this.camera.lookAt(0, 5, 0);
+    }
+    this.camera.updateMatrixWorld();
+    if (o.cookie) {
+      // one cookie, face to camera, dipped edge up: the 2D version's sprite
+      const q = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3(0.2, 1, 0).normalize(), new Vector3(0, 0, 1), new Vector3(0.2, 1, 0).normalize().cross(new Vector3(0, 0, 1))));
+      for (let i = 0; i < this.total; i++) this.cookies.setMatrixAt(i, tmpM.makeScale(0, 0, 0));
+      this.cookies.setMatrixAt(0, tmpM.compose(new Vector3(0, 5, 0), q, tmpS.setScalar(1)));
+      this.aDip.setX(0, o.cookie === 'plain' ? 0 : 1);
+      this.aBite.setXYZW(0, 0, 0.86, 0, o.cookie === 'bitten' ? 1 : 0);
+      this.cookies.instanceMatrix.needsUpdate = true;
+      this.aDip.needsUpdate = true;
+      this.aBite.needsUpdate = true;
+    }
+    this.wake();
   }
 
   /** Stage aspect changes (solo mode, resize): keep the horizontal framing for tall canvases. */

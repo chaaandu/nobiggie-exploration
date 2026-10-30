@@ -18,7 +18,8 @@
     "contrast": "node qa/contrast.mjs",
     "fonts": "python3 scripts/build-fonts.py",
     "textures": "node scripts/make-textures.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "render": "node scripts/render-stills.mjs"
   },
   "allowScripts": {
     "esbuild": true,

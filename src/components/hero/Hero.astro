@@ -142,6 +142,9 @@ const total = product.cookiesPerCup;
     aspect-ratio: 1 / 1;
     max-width: 100%;
     transform: translateX(-50%);
+    /* the table fades into the page instead of stopping at the frame's edge */
+    -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 99%);
+    mask-image: linear-gradient(to bottom, #000 80%, transparent 99%);
   }
   .stage-3d,
   .stage-ui {

@@ -1,14 +1,25 @@
 ---
-/** One short loop per ritual step. Phase 4 fills these with sprites rendered from the 3D cup. */
+/**
+ * One short loop per ritual step, made from the renders of the 3D cup (bowl + cookie
+ * sprites). Transform/opacity only; holds still under reduced motion.
+ */
+import { defaultFlavour } from '../../content/facts';
+
 interface Props {
   step: 'dip' | 'dunk' | 'repeat';
   class?: string;
 }
 const { step, class: cls } = Astro.props;
+const f = defaultFlavour;
 ---
 
-<div class:list={['loop', cls]} data-loop={step}>
-  <span class="loop-ph hand">{step}</span>
+<div class:list={['loop', `loop-${step}`, cls]} data-loop={step} style={`--bowl:url(/renders/bowl-${f}-600.webp)`}>
+  <div class="bowl"></div>
+  <div class="cookie">
+    <img class="c-plain" src={`/renders/cookie-${f}-plain-300.webp`} alt="" loading="lazy" width="300" height="300" />
+    <img class="c-dip" src={`/renders/cookie-${f}-${step === 'repeat' ? 'bitten' : 'dipped'}-300.webp`} alt="" loading="lazy" width="300" height="300" />
+  </div>
+  {step === 'repeat' && <p class="tally hand" aria-hidden="true"><span>23</span> left</p>}
 </div>
 
 <style>
@@ -16,12 +27,94 @@ const { step, class: cls } = Astro.props;
     position: relative;
     width: 100%;
     height: 100%;
-    display: grid;
-    place-items: center;
+    overflow: hidden;
     background: radial-gradient(120% 90% at 50% 18%, #FBF4E8 0%, var(--cream-2) 70%);
   }
-  .loop-ph {
-    color: var(--cocoa-2);
-    opacity: 0.6;
+  .bowl {
+    position: absolute;
+    inset: -10% -10% -10% -10%;
+    background: var(--bowl) no-repeat;
+    background-size: 210%;
+    background-position: 86% 66%;
+  }
+  .cookie {
+    position: absolute;
+    width: 34%;
+    aspect-ratio: 1;
+    left: 33%;
+    top: 4%;
+    animation: 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+    animation-play-state: paused;
+  }
+  .cookie img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .c-dip {
+    opacity: 0;
+    animation: 2.4s steps(1, end) infinite;
+    animation-play-state: paused;
+  }
+  .loop-dip .cookie { animation-name: dip; }
+  .loop-dip .c-dip { animation-name: coated; }
+  .loop-dunk .cookie { animation-name: dunk; }
+  .loop-dunk .c-dip { animation-name: coated; }
+  .loop-repeat .cookie { animation-name: bite; }
+  .loop-repeat .c-dip { animation-name: bitten; }
+  @keyframes dip {
+    0%, 8% { transform: translateY(0) rotate(180deg); }
+    34%, 48% { transform: translate(-6%, 52%) rotate(176deg); }
+    56% { transform: translate(8%, 50%) rotate(184deg); }
+    80%, 100% { transform: translateY(0) rotate(180deg); }
+  }
+  @keyframes dunk {
+    0%, 8% { transform: translateY(-8%) rotate(180deg); }
+    40%, 52% { transform: translateY(70%) rotate(180deg); }
+    80%, 100% { transform: translateY(-8%) rotate(180deg); }
+  }
+  @keyframes coated {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    92% { opacity: 0; }
+  }
+  @keyframes bite {
+    0%, 10% { transform: translate(0, 46%) scale(0.9) rotate(180deg); }
+    45% { transform: translate(0, 6%) scale(1.5) rotate(360deg); }
+    70% { transform: translate(0, 6%) scale(1.5) rotate(360deg); }
+    100% { transform: translate(0, 46%) scale(0.9) rotate(540deg); opacity: 0; }
+  }
+  @keyframes bitten {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    96% { opacity: 0; }
+  }
+  .tally {
+    position: absolute;
+    right: 7%;
+    top: 6%;
+    font-size: clamp(1.3rem, 1rem + 1vw, 1.8rem);
+    color: var(--cocoa);
+    transform: rotate(-5deg);
+  }
+  .tally span {
+    color: var(--velvet);
+  }
+  /* run only the loop you're looking at */
+  :global([data-active='dip']) .loop-dip :is(.cookie, .c-dip),
+  :global([data-active='dunk']) .loop-dunk :is(.cookie, .c-dip),
+  :global([data-active='repeat']) .loop-repeat :is(.cookie, .c-dip) {
+    animation-play-state: running;
+  }
+  :global(html[data-motion='reduced']) .cookie,
+  :global(html[data-motion='reduced']) .c-dip {
+    animation: none !important;
+  }
+  :global(html[data-motion='reduced']) .loop .cookie {
+    transform: translate(0, 40%) rotate(180deg);
+  }
+  :global(html[data-motion='reduced']) .loop .c-dip {
+    opacity: 1;
   }
 </style>

@@ -152,7 +152,7 @@ export function cookieMaterial(): { material: MeshStandardMaterial; uniforms: Co
         '#include <color_fragment>',
         /* glsl */ `#include <color_fragment>
         float bake = smoothstep(1.1, 1.7, rad) * 0.5 + (1.0 - top) * 0.25;
-        vec3 col = mix(uBase, uDark, clamp(nb * 0.8 + bake - 0.2 + crack * 0.35, 0.0, 1.0));
+        vec3 col = mix(uBase, uDark, clamp(nb * 0.8 + bake - 0.2 + crack * 0.14, 0.0, 1.0));
         col *= 0.92 + 0.16 * fine;
         // sugary highlights on the crown's high points
         col = mix(col, uBase * 1.18, smoothstep(0.62, 0.8, nb) * top * 0.5);
@@ -175,7 +175,7 @@ export function cookieMaterial(): { material: MeshStandardMaterial; uniforms: Co
       .replace(
         '#include <normal_fragment_maps>',
         /* glsl */ `#include <normal_fragment_maps>
-        float hgt = (nbFbm(vObj * 1.25 + vSeed) * 0.16 * mix(0.4, 1.0, top) + fine * 0.012 - crack * 0.05 + chunk * 0.03) * (1.0 - coat * 0.9);
+        float hgt = (nbFbm(vObj * 1.25 + vSeed) * 0.16 * mix(0.4, 1.0, top) + fine * 0.012 - crack * 0.02 + chunk * 0.03) * (1.0 - coat * 0.9);
         normal = nbPerturb(-vViewPosition, normal, vec2(dFdx(hgt), dFdy(hgt)), faceDirection);`,
       )
       .replace(
@@ -266,7 +266,7 @@ export function dipSurfaceMaterial(radius: number): { material: MeshPhysicalMate
     uRadius: { value: radius },
   };
   // The open surface: glossy, but no clearcoat (that doubled the sky in it and washed it out).
-  const material = new MeshPhysicalMaterial({ color: '#4A2717', roughness: 0.3, metalness: 0, envMapIntensity: 0.32, specularIntensity: 0.8 });
+  const material = new MeshPhysicalMaterial({ color: '#4A2717', roughness: 0.36, metalness: 0, envMapIntensity: 0.14, specularIntensity: 0.7 });
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     const fn = /* glsl */ `

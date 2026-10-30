@@ -1,0 +1,26 @@
+---
+// Internal: still renders of the 3D cup (npm run render). Not linked, not indexed.
+import '../styles/tokens.css';
+const preamble = `import R from "/@react-refresh"; R.injectIntoGlobalHook(window); window.$RefreshReg$ = () => {}; window.$RefreshSig$ = () => (t) => t; window.__vite_plugin_react_preamble_installed__ = true;`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>render</title>
+    {import.meta.env.DEV && <script type="module" is:inline set:html={preamble} />}
+    <style>
+      html, body { margin: 0; background: transparent; }
+    </style>
+  </head>
+  <body>
+    <span style="font-family: Fraunces; font-weight: 760; position: absolute; opacity: 0">NO BIGGIE</span>
+    <span style="font-family: 'Gochi Hand'; position: absolute; opacity: 0">Dip. Dunk. Repeat.</span>
+    <div id="studio"></div>
+    <script>
+      import '../three/studio';
+    </script>
+  </body>
+</html>
