@@ -1,4 +1,259 @@
 ---
-// Filled in in phase 3.
+/**
+ * The bag: bottom sheet on phones, drawer on desktop. Native <dialog> (focus trap and Esc
+ * for free). Rendered by src/scripts/bag-ui.ts; plain TypeScript, no framework.
+ */
+import Icon from '../ui/Icon.astro';
+import { cutoffCopy } from '../../lib/cutoff-copy';
 ---
-<div data-bag hidden></div>
+
+<dialog class="bag" id="bag" aria-labelledby="bag-title" data-bag>
+  <div class="bag-inner">
+    <div class="grab" aria-hidden="true"></div>
+    <header class="bag-head">
+      <h2 id="bag-title">Your bag</h2>
+      <button class="icon-btn" type="button" data-bag-close aria-label="Close the bag"><Icon name="close" /></button>
+    </header>
+
+    <div class="bag-body">
+      <p class="empty" data-bag-empty>
+        Nothing in here yet. Suspicious.
+        <a class="link" href="/shop" data-bag-close>Pick a cup</a>
+      </p>
+      <ul class="lines" role="list" data-bag-lines></ul>
+
+      <div class="block" data-bag-extras>
+        <div class="field">
+          <label for="bag-pin">Delivery pincode</label>
+          <div class="pin-row">
+            <input id="bag-pin" class="input" inputmode="numeric" autocomplete="postal-code" maxlength="6" placeholder="560034" data-pin />
+          </div>
+          <p class="pin-msg small" data-pin-msg aria-live="polite"></p>
+        </div>
+
+        <details class="note" data-note-box>
+          <summary>Add a gift note <span class="muted small">(optional)</span></summary>
+          <div class="note-grid">
+            <div class="field"><label for="bag-to">To</label><input id="bag-to" class="input" maxlength="28" data-note="to" /></div>
+            <div class="field"><label for="bag-from">From</label><input id="bag-from" class="input" maxlength="28" data-note="from" /></div>
+            <div class="field note-msg"><label for="bag-msg">Note</label><input id="bag-msg" class="input" maxlength="48" data-note="message" /></div>
+          </div>
+        </details>
+
+        <p class="cutoff small"><Icon name="clock" size={18} /><span data-cutoff="long">{cutoffCopy({ kind: 'unknown' }, 'long')}</span></p>
+      </div>
+    </div>
+
+    <footer class="bag-foot" data-bag-foot>
+      <p class="total"><span>Subtotal</span><span class="num" data-bag-total>₹0</span></p>
+      <p class="small muted" data-bag-delivery></p>
+      <div data-bag-cta></div>
+    </footer>
+  </div>
+</dialog>
+
+<script>
+  import '../../scripts/bag-ui';
+</script>
+
+<style>
+  .bag {
+    padding: 0;
+    border: 0;
+    color: var(--cocoa);
+    background: var(--paper);
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    margin: auto 0 0;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -20px 50px -20px rgb(30 18 10 / 0.5);
+  }
+  .bag::backdrop {
+    background: rgb(30 18 10 / 0.42);
+  }
+  .bag[open] {
+    animation: sheet-up 280ms var(--ease-out);
+  }
+  @keyframes sheet-up {
+    from { transform: translateY(40px); opacity: 0.5; }
+  }
+  .bag-inner {
+    display: flex;
+    flex-direction: column;
+    max-height: 88svh;
+  }
+  .grab {
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--line-strong);
+    margin: 10px auto 0;
+  }
+  .bag-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px 6px 20px;
+  }
+  .bag-head h2 {
+    font-size: 1.8rem;
+  }
+  .bag-body {
+    overflow-y: auto;
+    padding: 0 20px 12px;
+    overscroll-behavior: contain;
+  }
+  .empty {
+    padding: 18px 0 24px;
+    font-family: var(--f-hand);
+    font-size: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .empty .link {
+    font-family: var(--f-ui);
+    font-size: 1rem;
+  }
+  .lines {
+    display: flex;
+    flex-direction: column;
+  }
+  .lines :global(li) {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .lines :global(img) {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    background: var(--cream-2);
+    object-fit: cover;
+  }
+  .lines :global(.l-name) {
+    font-family: var(--f-display);
+    font-weight: 650;
+    font-size: 1.15rem;
+    line-height: 1.1;
+  }
+  .lines :global(.l-sub) {
+    font-size: 0.85rem;
+    color: var(--cocoa-2);
+  }
+  .lines :global(.l-qty) {
+    display: inline-flex;
+    align-items: center;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 999px;
+  }
+  .lines :global(.l-qty button) {
+    width: var(--tap);
+    height: var(--tap);
+    border: 0;
+    background: none;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  .lines :global(.l-qty output) {
+    min-width: 2ch;
+    text-align: center;
+    font-weight: 700;
+  }
+  .block {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 16px;
+  }
+  .pin-msg {
+    min-height: 1.3em;
+    color: var(--cocoa-2);
+  }
+  .pin-msg[data-tone='ok'] {
+    color: #2E6B45;
+    font-weight: 600;
+  }
+  .pin-msg[data-tone='no'] {
+    color: var(--velvet);
+    font-weight: 600;
+  }
+  .note summary {
+    min-height: var(--tap);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .note-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding-top: 6px;
+  }
+  .note-msg {
+    grid-column: 1 / -1;
+  }
+  .cutoff {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    color: var(--cocoa-2);
+  }
+  .cutoff :global(svg) {
+    color: var(--velvet);
+    flex: none;
+  }
+  .bag-foot {
+    border-top: 1px solid var(--line);
+    padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--paper);
+  }
+  .total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .bag-foot :global(.btn) {
+    width: 100%;
+    min-height: 56px;
+  }
+  .bag-foot :global(.pay-links) {
+    display: grid;
+    gap: 8px;
+  }
+  @media (min-width: 900px) {
+    .bag {
+      width: 420px;
+      height: 100svh;
+      margin: 0 0 0 auto;
+      border-radius: 22px 0 0 22px;
+    }
+    .bag[open] {
+      animation: drawer-in 280ms var(--ease-out);
+    }
+    @keyframes drawer-in {
+      from { transform: translateX(40px); opacity: 0.5; }
+    }
+    .bag-inner {
+      max-height: 100svh;
+      height: 100%;
+    }
+    .bag-body {
+      flex: 1;
+    }
+    .grab {
+      display: none;
+    }
+  }
+</style>

@@ -1,4 +1,174 @@
 ---
-// Filled in with the bag (phase 3).
+/**
+ * Phones only: once the hero (or the page's first block) scrolls away, a bar sits under
+ * your thumb with flavour · price · Order. Order opens the bag: two taps to WhatsApp.
+ */
+import Icon from '../ui/Icon.astro';
+import { defaultFlavour, flavours, flavourById } from '../../content/facts';
+import { quickOrderHref } from '../../lib/checkout';
+import { rupees } from '../../lib/format';
+
+const f = flavourById(defaultFlavour);
 ---
-<div class="sticky-bar" data-sticky-bar hidden></div>
+
+<div class="sticky-bar" data-sticky-bar aria-hidden="true">
+  <label class="pick">
+    <span class="sr-only">Flavour</span>
+    <span class="sw" data-bar-swatch style={`--sw:${f.look.swatch}`}></span>
+    <select data-bar-flavour tabindex="-1">
+      {flavours.map((fl) => <option value={fl.id} selected={fl.id === f.id}>{fl.name}</option>)}
+    </select>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
+  </label>
+  <a class="bag-mini" href="/shop" data-bag-open tabindex="-1" aria-label="Bag">
+    <Icon name="bag" size={20} /><span class="num" data-bag-count>0</span>
+  </a>
+  <a class="btn order" href={quickOrderHref(f.id)} data-order data-bar-order tabindex="-1">
+    Order <span class="price" data-bar-price>{rupees(f.price)}</span>
+  </a>
+</div>
+
+<script>
+  import { currentFlavour, onFlavour, setCurrentFlavour } from '../../lib/current-flavour';
+  import { flavourById, type FlavourId } from '../../content/facts';
+  import { rupees } from '../../lib/format';
+  import { quickOrderHref } from '../../lib/checkout';
+  import { track } from '../../lib/track';
+
+  const bar = document.querySelector<HTMLElement>('[data-sticky-bar]')!;
+  const select = bar.querySelector<HTMLSelectElement>('[data-bar-flavour]')!;
+  const price = bar.querySelector<HTMLElement>('[data-bar-price]')!;
+  const sw = bar.querySelector<HTMLElement>('[data-bar-swatch]')!;
+  const order = bar.querySelector<HTMLAnchorElement>('[data-bar-order]')!;
+
+  const show = (id: FlavourId) => {
+    const f = flavourById(id);
+    select.value = id;
+    price.textContent = rupees(f.price);
+    sw.style.setProperty('--sw', f.look.swatch);
+    order.dataset.orderFlavour = id;
+    order.href = quickOrderHref(id);
+  };
+  show(currentFlavour());
+  onFlavour((id) => show(id));
+  select.addEventListener('change', () => {
+    const from = currentFlavour();
+    setCurrentFlavour(select.value as FlavourId, 'bar');
+    track('flavour_switch', { from, to: select.value, source: 'sticky_bar' });
+  });
+
+  const setVisible = (on: boolean) => {
+    bar.toggleAttribute('data-on', on);
+    bar.setAttribute('aria-hidden', String(!on));
+    bar.querySelectorAll<HTMLElement>('select, a').forEach((el) => (el.tabIndex = on ? 0 : -1));
+  };
+  const trigger = document.querySelector('[data-bar-trigger]');
+  if (trigger) {
+    new IntersectionObserver(([e]) => setVisible(!e.isIntersecting && e.boundingClientRect.top < 0), { threshold: 0 }).observe(trigger);
+  } else {
+    const onScroll = () => setVisible(scrollY > 320);
+    addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+</script>
+
+<style>
+  .sticky-bar {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 7px 7px 12px;
+    border-radius: 22px;
+    background: rgb(251 247 240 / 0.97);
+    border: 1px solid var(--line);
+    box-shadow: 0 14px 34px -10px rgb(30 18 10 / 0.45);
+    transform: translateY(130%);
+    transition: transform 320ms var(--ease-out);
+  }
+  .sticky-bar[data-on] {
+    transform: none;
+  }
+  :global(html[data-bag-open]) .sticky-bar,
+  :global(html[data-solo]) .sticky-bar {
+    transform: translateY(130%);
+  }
+  .pick {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    min-height: var(--tap);
+  }
+  .pick select {
+    appearance: none;
+    border: 0;
+    background: none;
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: var(--cocoa);
+    padding: 0 20px 0 0;
+    min-height: var(--tap);
+    width: 100%;
+    text-overflow: ellipsis;
+  }
+  .pick svg {
+    position: absolute;
+    right: 0;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--cocoa);
+    stroke-width: 2;
+    pointer-events: none;
+  }
+  .sw {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--sw);
+  }
+  .bag-mini {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    color: var(--cocoa);
+  }
+  .bag-mini span {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 999px;
+    background: var(--velvet);
+    color: var(--cream);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 17px;
+    text-align: center;
+    padding: 0 4px;
+    transform: scale(0);
+  }
+  .bag-mini span[data-n] {
+    transform: scale(1);
+  }
+  .order {
+    min-height: 48px;
+    padding: 0 18px;
+  }
+  @media (min-width: 900px) {
+    .sticky-bar {
+      display: none;
+    }
+  }
+</style>

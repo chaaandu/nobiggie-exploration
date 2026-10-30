@@ -13,6 +13,8 @@
  * To fill a todo, replace `todo<string>('…')` with the value, e.g. `'14:00'`.
  */
 
+import synced from './shopify.json' with { type: 'json' };
+
 export type Pending = { kind: 'unconfirmed' | 'todo'; note: string; value?: unknown };
 export const pending: Pending[] = [];
 
@@ -191,6 +193,17 @@ export const flavours: Flavour[] = [
   },
 ];
 
+// Once `npm run shopify:sync` has run, Shopify is the source of truth for price and variant.
+type Synced = { domain: string | null; products: Record<string, { variantId: string; price: number; compareAt: number | null }> };
+for (const f of flavours) {
+  const p = (synced as Synced).products[f.id];
+  if (!p) continue;
+  f.shopify.variantId = p.variantId;
+  f.price = p.price;
+  const i = pending.findIndex((x) => x.note.startsWith(`${f.name}: price`));
+  if (i >= 0) pending.splice(i, 1);
+}
+
 export const defaultFlavour: FlavourId = 'choco-chunk';
 
 export function flavourById(id: string): Flavour {
@@ -234,7 +247,7 @@ export const checkout = {
   mode: 'whatsapp' as CheckoutMode,
   shopify: {
     /** e.g. "4mtm6f-xt.myshopify.com" or "shop.nobiggie.shop". null = not connected. */
-    domain: null as string | null,
+    domain: ((synced as Synced).domain ?? null) as string | null,
   },
   paymentNote: todo<string>('How WhatsApp orders are paid, e.g. "We’ll send a UPI link."'),
 };

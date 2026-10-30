@@ -19,7 +19,8 @@
     "fonts": "python3 scripts/build-fonts.py",
     "textures": "node scripts/make-textures.mjs",
     "astro": "astro",
-    "render": "node scripts/render-stills.mjs"
+    "render": "node scripts/render-stills.mjs",
+    "shopify:sync": "node scripts/shopify-sync.mjs"
   },
   "allowScripts": {
     "esbuild": true,
