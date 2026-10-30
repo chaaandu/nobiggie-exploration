@@ -50,6 +50,7 @@ for (const [w, h] of sizes) {
     for (const el of handles) {
       i++;
       const id = (await el.getAttribute('id')) ?? (await el.evaluate((n) => n.className.split(' ')[0])) ?? `s${i}`;
+      if (!(await el.isVisible())) continue;
       await el.scrollIntoViewIfNeeded();
       await page.waitForTimeout(250);
       const box = await el.boundingBox();

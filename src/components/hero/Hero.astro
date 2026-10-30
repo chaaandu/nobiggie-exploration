@@ -143,8 +143,10 @@ const total = product.cookiesPerCup;
     max-width: 100%;
     transform: translateX(-50%);
     /* the table fades into the page instead of stopping at the frame's edge */
-    -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 99%);
-    mask-image: linear-gradient(to bottom, #000 80%, transparent 99%);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent), linear-gradient(to bottom, #000 80%, transparent 99%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent), linear-gradient(to bottom, #000 80%, transparent 99%);
+    mask-composite: intersect;
   }
   .stage-3d,
   .stage-ui {
@@ -428,7 +430,7 @@ const total = product.cookiesPerCup;
     .stage {
       aspect-ratio: 21 / 10;
       max-height: min(62svh, 600px);
-      margin-top: clamp(-90px, -5vw, -40px);
+      margin-top: clamp(-56px, -3vw, -24px);
     }
     .controls {
       flex-direction: row;

@@ -54,6 +54,13 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
   </div>
 </header>
 
+<script>
+  const head = document.querySelector<HTMLElement>('.site-head');
+  const onScroll = () => head?.toggleAttribute('data-scrolled', scrollY > 8);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+
 <style>
   .site-head {
     position: relative;
