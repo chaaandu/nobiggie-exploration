@@ -381,23 +381,20 @@ function hasWebGL2(forced = false): boolean {
   }
 }
 
-/** Resolves after ~2s of idle, or as soon as someone touches, scrolls or types. */
+/**
+ * Resolves on the first sign of intent: a touch, a scroll, a key, the mouse moving. The 3D is
+ * ~300KB of script; loading it on intent keeps it off the first paint entirely (and off a
+ * phone that only came for the Order button).
+ */
 function whenIdleOrIntent(el: HTMLElement): Promise<void> {
   return new Promise((resolve) => {
-    let done = false;
+    const events = ['pointerdown', 'pointermove', 'keydown', 'scroll', 'touchstart', 'wheel'];
     const go = () => {
-      if (done) return;
-      done = true;
       events.forEach((ev) => window.removeEventListener(ev, go));
       resolve();
     };
-    const events = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
-    events.forEach((ev) => window.addEventListener(ev, go, { passive: true, once: true }));
+    events.forEach((ev) => window.addEventListener(ev, go, { passive: true }));
     el.addEventListener('pointerenter', go, { once: true });
-    const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-    const later = () => (idle ? idle(go, { timeout: 2500 }) : setTimeout(go, 1500));
-    if (document.readyState === 'complete') setTimeout(later, 1200);
-    else window.addEventListener('load', () => setTimeout(later, 1200), { once: true });
   });
 }
 

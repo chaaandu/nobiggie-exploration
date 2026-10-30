@@ -85,6 +85,8 @@ export interface DirectorOptions {
   events: DirectorEvents;
   /** Clock in ms. Real time by default; the recorder and QA drive it by hand. */
   clock?: () => number;
+  /** URL of a real model (public/models/cup.glb) to use instead of the procedural parts. */
+  glb?: string;
 }
 
 type LidState = 'on' | 'popping' | 'bowl' | 'returning';
@@ -337,8 +339,34 @@ export class Director {
       ],
       this.palette(),
     );
+    if (this.opts.glb) await this.useGlb(this.opts.glb).catch((e) => console.warn('[3d] cup.glb failed, using the procedural cup', e));
     if (this.night) this.applyNight(true);
     this.pose(this.opts.lidOff, this.opts.left);
+  }
+
+  /** Swap in the named parts of a real model. Units: centimetres, cup base at the origin. */
+  private async useGlb(url: string) {
+    const { loadCupGlb } = await import('./glb');
+    const parts = await loadCupGlb(url);
+    if (parts.cup) {
+      this.cupGroup.clear();
+      this.cupGroup.add(parts.cup);
+    }
+    if (parts.lid) {
+      this.lidShell.forEach((m) => this.lid.remove(m));
+      this.lid.add(parts.lid);
+    }
+    if (parts.dip) {
+      this.lid.remove(this.dipMass);
+      this.lid.add(parts.dip);
+    }
+    if (parts.cookie) {
+      // keep our per-cookie attributes (seed, dip coat, bite) on the new shape
+      const g = parts.cookie.geometry.clone();
+      const old = this.cookies.geometry;
+      ['aSeed', 'aDip', 'aBite'].forEach((k) => g.setAttribute(k, old.getAttribute(k)));
+      this.cookies.geometry = g;
+    }
   }
 
   /** A patch of the cup's cone, so the sticker hugs the plastic. */

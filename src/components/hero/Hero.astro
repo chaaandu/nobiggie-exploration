@@ -5,9 +5,12 @@ import Poster from './Poster.astro';
 import { defaultFlavour, dips, flavours, flavourById, product } from '../../content/facts';
 import { quickOrderHref } from '../../lib/checkout';
 import { rupees } from '../../lib/format';
+import { existsSync } from 'node:fs';
 
 const f = flavourById(defaultFlavour);
 const total = product.cookiesPerCup;
+// Drop a real model at public/models/cup.glb and the 3D uses it (docs/models.md).
+const glb = existsSync('public/models/cup.glb') ? '/models/cup.glb' : undefined;
 ---
 
 <section class="hero" data-hero data-flavour={f.id} data-total={total} aria-labelledby="hero-title" data-bar-trigger>
@@ -15,7 +18,7 @@ const total = product.cookiesPerCup;
     <h1 id="hero-title">Come for the cookies. <em>Stay for the dip.</em></h1>
   </div>
 
-  <div class="stage" data-stage>
+  <div class="stage" data-stage data-glb={glb}>
     <!-- Everything cup-shaped lives in one centred square, so overlays line up at any width. -->
     <div class="frame" data-frame>
       <Poster flavour={f.id} />

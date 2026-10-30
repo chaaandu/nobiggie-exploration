@@ -31,7 +31,9 @@ export const create: CreateRenderer = async (stage, start, cb) => {
   const layers = document.createElement('div');
   layers.className = 'layers-2d';
   layers.setAttribute('aria-hidden', 'true');
-  Object.assign(layers.style, { position: 'absolute', inset: '0', pointerEvents: 'none' });
+  // Hidden until first used: the poster underneath is pixel-identical, and keeping it on
+  // screen keeps it the page's one LCP image.
+  Object.assign(layers.style, { position: 'absolute', inset: '0', pointerEvents: 'none', visibility: 'hidden' });
   frame.insertBefore(layers, frame.querySelector('[data-stage-3d]'));
 
   let flavour: FlavourId = start.flavour;
@@ -65,10 +67,18 @@ export const create: CreateRenderer = async (stage, start, cb) => {
     ['dipped', 'bitten'].forEach((c) => (new Image().src = `/renders/cookie-${flavour}-${c}-300.webp`));
   };
   paint();
-  await Promise.all([open, lid].map((i) => i.decode().catch(() => undefined)));
-  preload();
-  // Our layers now stand in for the poster.
-  stage.querySelector<HTMLElement>('[data-poster]')!.style.visibility = 'hidden';
+  const later = () => preload();
+  if (document.readyState === 'complete') later();
+  else addEventListener('load', later, { once: true });
+  let live = false;
+  /** First interaction: our layers take over from the poster. */
+  const activate = async () => {
+    if (live) return;
+    live = true;
+    await Promise.all([open, lid, bowl].map((i) => i.decode().catch(() => undefined)));
+    layers.style.visibility = 'visible';
+    stage.querySelector<HTMLElement>('[data-poster]')!.style.visibility = 'hidden';
+  };
 
   const targets = (): StagePoint[] =>
     lidOff && left > 0
@@ -82,6 +92,7 @@ export const create: CreateRenderer = async (stage, start, cb) => {
     kind: '2d',
     async pop() {
       if (lidOff) return;
+      await activate();
       running++;
       sound.play('pop');
       bowl.style.opacity = '0';
@@ -99,6 +110,7 @@ export const create: CreateRenderer = async (stage, start, cb) => {
     },
     async take() {
       if (!lidOff || left <= 0) return;
+      await activate();
       running++;
       const c = img('l-cookie', `/renders/cookie-${flavour}-plain-300.webp`);
       c.style.cssText = `position:absolute;width:20%;left:${CUP_TOP.x * 100 - 10}%;top:${CUP_TOP.y * 100 - 10}%;`;
@@ -129,6 +141,7 @@ export const create: CreateRenderer = async (stage, start, cb) => {
       cb.targets([]);
     },
     setFlavour(id) {
+      void activate();
       flavour = id;
       r.refill();
       preload();
@@ -137,6 +150,7 @@ export const create: CreateRenderer = async (stage, start, cb) => {
       reduced = v;
     },
     tug(p) {
+      if (p > 0) void activate();
       if (!lidOff) lid.style.transform = `translateY(${-p * 3}%) scaleY(${1 + p * 0.04})`;
     },
     busy: () => running > 0,

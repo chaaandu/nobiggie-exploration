@@ -1,0 +1,10 @@
+# Old Shopify product URLs → the new pages (Cloudflare Pages and Netlify read this file)
+/products/choco-chunk-cookies        /shop/choco-chunk        301
+/products/red-velvet-cookies         /shop/red-velvet         301
+/products/double-choco-chip-cookies  /shop/double-chocolate   301
+/collections/*                       /shop                    301
+/pages/contact                       /contact                 301
+/policies/shipping-policy            /policies/shipping       301
+/policies/refund-policy              /policies/refunds        301
+/policies/privacy-policy             /policies/privacy        301
+/policies/terms-of-service           /policies/terms          301

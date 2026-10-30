@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /render
+
+Sitemap: https://nobiggie.shop/sitemap-index.xml

@@ -20,7 +20,10 @@
     "textures": "node scripts/make-textures.mjs",
     "astro": "astro",
     "render": "node scripts/render-stills.mjs",
-    "shopify:sync": "node scripts/shopify-sync.mjs"
+    "shopify:sync": "node scripts/shopify-sync.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "og": "node scripts/make-og.mjs",
+    "budget": "node qa/budget.mjs"
   },
   "allowScripts": {
     "esbuild": true,

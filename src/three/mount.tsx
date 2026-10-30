@@ -18,6 +18,7 @@ export const create: CreateRenderer = (stage, start, cb) =>
     const manual = new URLSearchParams(location.search).get('clock') === 'manual';
     const director = new Director({
       clock: manual ? () => manualT : undefined,
+      glb: stage.dataset.glb || undefined,
       flavour: start.flavour,
       total: start.total,
       lidOff: start.lidOff,

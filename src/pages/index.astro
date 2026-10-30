@@ -12,7 +12,9 @@ import GroupCalc from '../components/sections/GroupCalc.astro';
 import B2B from '../components/sections/B2B.astro';
 import FinalCta from '../components/sections/FinalCta.astro';
 import { businessLd, productLd } from '../lib/schema';
-import { flavours } from '../content/facts';
+import { defaultFlavour, flavours } from '../content/facts';
+import { renders } from '../content/renders';
+const poster = renders.poster[defaultFlavour];
 ---
 
 <Base
@@ -21,6 +23,19 @@ import { flavours } from '../content/facts';
   italicHeadline
   jsonLd={[businessLd(), ...flavours.map(productLd)]}
 >
+  {
+    poster && (
+      <link
+        slot="head"
+        rel="preload"
+        as="image"
+        type="image/avif"
+        imagesrcset={poster.avif}
+        imagesizes="(min-width: 900px) 600px, (min-width: 640px) 76vw, 100vw"
+        fetchpriority="high"
+      />
+    )
+  }
   <Hero />
   <FactStrip />
   <Ritual />
