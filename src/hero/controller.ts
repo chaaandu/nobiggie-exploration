@@ -73,7 +73,10 @@ function init(hero: HTMLElement) {
     targets(points: StagePoint[]) {
       renderTargets(points);
     },
-    ready() {},
+    ready() {
+      // 3D is drawing: the poster and any 2D layers fade out underneath it.
+      stage.dataset.renderer = renderer?.kind === '3d' || !renderer ? '3d' : stage.dataset.renderer;
+    },
   };
 
   async function use(next: HeroRenderer) {
@@ -87,7 +90,8 @@ function init(hero: HTMLElement) {
     await use(await create2d(stage, { ...state }, callbacks));
     if (root.dataset.tier !== '3d') return;
     await whenIdleOrIntent(stage);
-    if (!hasWebGL2()) {
+    const forced = new URLSearchParams(location.search).get('3d') === '1';
+    if (!hasWebGL2(forced)) {
       root.dataset.tier = '2d';
       return;
     }
@@ -97,6 +101,7 @@ function init(hero: HTMLElement) {
       await until(() => !renderer?.busy());
       const r3 = await create3d(stage, { ...state, left: state.left - inFlight }, callbacks);
       await use(r3);
+      stage.dataset.renderer = '3d';
     } catch (err) {
       console.warn('[hero] 3D unavailable, staying 2D', err);
       root.dataset.tier = '2d';
@@ -363,10 +368,11 @@ function init(hero: HTMLElement) {
 
 /* ------------------------------------------------------------ helpers */
 
-function hasWebGL2(): boolean {
+/** Real GPU WebGL2? (`forced` accepts software rendering too, for QA with ?3d=1.) */
+function hasWebGL2(forced = false): boolean {
   try {
     const c = document.createElement('canvas');
-    const gl = c.getContext('webgl2', { failIfMajorPerformanceCaveat: true });
+    const gl = c.getContext('webgl2', { failIfMajorPerformanceCaveat: !forced });
     const ok = !!gl;
     gl?.getExtension('WEBGL_lose_context')?.loseContext();
     return ok;

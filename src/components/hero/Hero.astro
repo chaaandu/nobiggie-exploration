@@ -27,12 +27,12 @@ const total = product.cookiesPerCup;
         </button>
         <div class="cookie-hits" role="group" aria-label="Cookies" data-cookie-hits hidden></div>
         <p class="note note-pop hand" data-note="pop" aria-hidden="true">
-          <svg viewBox="0 0 60 40" class="note-arrow"><path d="M56 34C42 32 26 24 14 8" /><path d="M24 9 13 7l-1 11" /></svg>
+          <svg viewBox="0 0 60 40" class="note-arrow"><path d="M56 8C40 10 22 18 10 32" /><path d="M9 20l1 13 12-2" /></svg>
           <span>pop the lid</span>
         </p>
         <p class="note note-take hand" data-note="take" aria-hidden="true" hidden>
           <span>tap a cookie</span>
-          <svg viewBox="0 0 60 40" class="note-arrow"><path d="M4 8c14 2 30 10 42 24" /><path d="M34 33l12 0 0-12" /></svg>
+          <svg viewBox="0 0 60 40" class="note-arrow"><path d="M4 6c18 2 32 12 40 28" /><path d="M33 31l12 4 3-13" /></svg>
         </p>
         <p class="counter hand num" data-counter aria-hidden="true" hidden><span data-left>{total}</span> left</p>
       </div>
@@ -155,6 +155,14 @@ const total = product.cookiesPerCup;
   .stage-3d[data-ready] {
     opacity: 1;
   }
+  .stage :global(.poster) {
+    transition: opacity 420ms var(--ease-out);
+  }
+  .stage[data-renderer='3d'] :global(.poster),
+  .stage[data-renderer='3d'] :global(.layers-2d) {
+    opacity: 0;
+    pointer-events: none;
+  }
   .stage-ui {
     pointer-events: none;
   }
@@ -163,10 +171,10 @@ const total = product.cookiesPerCup;
   }
   .lid-hit {
     position: absolute;
-    left: 50%;
-    top: 6%;
-    width: 40%;
-    height: 30%;
+    left: 30%;
+    top: 8%;
+    width: 46%;
+    height: 28%;
     transform: translateX(-50%);
     border: 0;
     background: transparent;
@@ -211,14 +219,14 @@ const total = product.cookiesPerCup;
     white-space: nowrap;
   }
   .note-pop {
-    left: 66%;
-    top: 5%;
+    left: 52%;
+    top: 7%;
     transform: rotate(-5deg);
   }
   .note-take {
-    right: 66%;
-    top: 30%;
-    transform: rotate(4deg);
+    left: 3%;
+    top: 4%;
+    transform: rotate(-3deg);
   }
   .note-arrow {
     width: clamp(36px, 8%, 56px);
@@ -407,8 +415,12 @@ const total = product.cookiesPerCup;
     }
     /* The top of the frame sits under the headline on wide screens: keep notes below it. */
     .note-pop {
-      top: 22%;
-      left: 68%;
+      top: 20%;
+      left: 54%;
+    }
+    .note-take {
+      top: 16%;
+      left: -8%;
     }
     .stage {
       aspect-ratio: 21 / 10;

@@ -24,6 +24,11 @@ const { title, description, image = '/og/home.png', type = 'website', jsonLd = [
 const site = Astro.site ?? new URL(brand.siteUrl);
 const canonical = new URL(Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/', site).href;
 const imageUrl = new URL(image, site).href;
+const refreshPreamble = `import RefreshRuntime from "/@react-refresh";
+RefreshRuntime.injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;
+window.__vite_plugin_react_preamble_installed__ = true;`;
 ---
 
 <!doctype html>
@@ -86,6 +91,8 @@ const imageUrl = new URL(image, site).href;
         if (hr >= 22 || hr < 3) d.dataset.shift = 'night';
       })();
     </script>
+    {/* The 3D scene is loaded by hand, not as an Astro island, so in dev we install React Refresh's preamble ourselves. */}
+    {import.meta.env.DEV && <script type="module" is:inline set:html={refreshPreamble} />}
     <slot name="head" />
     {jsonLd.map((j) => <script type="application/ld+json" set:html={JSON.stringify(j)} />)}
   </head>

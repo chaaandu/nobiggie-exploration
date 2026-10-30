@@ -141,7 +141,7 @@ export const flavours: Flavour[] = [
       ['Dip', 'Nutella'],
       ['Best with', 'Absolutely anything'],
     ],
-    look: { cookie: '#C08A54', cookieDark: '#8E5A2C', chunk: '#2A170E', chunkStyle: 'chunks', swatch: '#B98250' },
+    look: { cookie: '#C9925A', cookieDark: '#8A5427', chunk: '#2B160C', chunkStyle: 'chunks', swatch: '#B98250' },
     shopify: { handle: 'choco-chunk-cookies', variantId: null },
     razorpayLink: null,
   },
